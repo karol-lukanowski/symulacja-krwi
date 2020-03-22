@@ -8,14 +8,55 @@ G = nx.Graph()
 
 qin = 1  # ilosć wpływającej krwi
 presout = 0  # cisnienie na wyjsciu
-n = 50  # rozmiar siatki
+n = 10  # rozmiar siatki
 mu = 0.0035  # współczynnik lepkosci
-l = 1  # długosć krawędzi - póki co trzymamy stałą długosć, a szum wprowadzamy zmianą początkowych grubosci
+l = 1  # długosć krawędzi
 c1 = np.pi / (128 * mu)  # stała przepływu
 c2 = 64 * mu / (np.pi)  # stała siły
-N = 150  # liczba iteracji
+N = 1000  # liczba iteracji
 length_wiggle_param = 0.3
 diamater_wiggle_param = 0
+qdrawconst = 10
+ddrawconst = 10
+
+# rysowanie przepływów
+def drawq(G, name):
+    plt.figure(figsize=(10, 10))
+    pos = nx.get_node_attributes(G, 'pos')
+    nx.draw(G, pos, node_size=0, with_labels=False)
+    
+    qmax = 0
+    for edge in G.edges(data='q'):
+        if (edge[2] > qmax):
+            qmax=edge[2]
+    
+    for edge in G.edges(data='q'):
+        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+            nx.draw_networkx_edges(G, pos, edgelist=[edge], width=qdrawconst * edge[2] / qmax)
+    
+    plt.axis('equal')
+    plt.savefig(name)
+    plt.close()
+
+# rysowanie srednic
+def drawd(G, name):
+    plt.figure(figsize=(10, 10))
+    pos = nx.get_node_attributes(G, 'pos')
+    nx.draw(G, pos, node_size=0)
+    
+    dmax = 0
+    for edge in G.edges(data='d'):
+        if (edge[2] > dmax):
+            dmax=edge[2]
+    
+    for edge in G.edges(data='d'):
+        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+            nx.draw_networkx_edges(G, pos, edgelist=[edge], width=ddrawconst * edge[2] / dmax)
+    #       print (edge[2])
+    
+    plt.axis('equal')
+    plt.savefig(name)
+    plt.close()
 
 # czysto techniczne funkcje do warunków brzegowych
 def boundaryr(i):
@@ -95,8 +136,8 @@ for node in G.nodes:
     if (node >= n and node < n*(n-1) and (node%n != 0) and ((node+1)%n != 0)):
         r = np.random.ranf() * 0.5
         fi = np.random.ranf() * 2 * np.pi
-        dx = wiggle_param * r * np.cos(fi)
-        dy = wiggle_param * r * np.sin(fi)
+        dx = length_wiggle_param * r * np.cos(fi)
+        dy = length_wiggle_param * r * np.sin(fi)
         pos = G.nodes[node]['pos']
         new_x, new_y = pos[0] + dx, pos[1] + dy
         G.nodes[node]['pos'] = (new_x, new_y)
@@ -156,7 +197,7 @@ for i in range(N):
         else:
             matrix[node][node]=1
 
-    # do odkomentowania liczenia na macierzach rzadkich, póki co dobrze działa normalne rozwiązywania równania macierzowego
+    # do odkomentowania normalne rozwiązywanie równania macierzowego
     S = spr.csc_matrix(matrix)
     pnow = sprlin.spsolve(S, presult)
     #    pnow=np.linalg.solve(matrix,presult)
@@ -177,37 +218,7 @@ for i in range(N):
                     else:
                         G[node][ind]["d"] += 0.2
 
-# for edge in G.edges(data='q'):
-#    if (edge[1]>=90):
-#        print (edge[2])
 
-# for edge in G.edges(data='d'):
-#    print (edge[2])
+drawq(G, "q.png")
+drawd(G, "d.png")
 
-# rysowanie przepływów - ich wartosci są małe, więc grubosci rysowanych krawędzi trzeba przemnożyć
-plt.figure(figsize=(10, 10))
-pos = nx.get_node_attributes(G, 'pos')
-nx.draw(G, pos, node_size=0, with_labels=False)
-
-for edge in G.edges(data='q'):
-    if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
-        nx.draw_networkx_edges(G, pos, edgelist=[edge], width=100 * edge[2])
-#        print (edge[2])
-
-plt.axis('equal')
-#plt.show()
-plt.savefig("graphq.png")
-
-
-# rysowanie srednic
-plt.figure(figsize=(10, 10))
-pos = nx.get_node_attributes(G, 'pos')
-nx.draw(G, pos, node_size=0)
-
-for edge in G.edges(data='d'):
-    if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
-        nx.draw_networkx_edges(G, pos, edgelist=[edge], width=edge[2])
-#       print (edge[2])
-
-plt.axis('equal')
-plt.savefig("graphd.png")
