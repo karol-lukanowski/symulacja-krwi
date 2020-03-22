@@ -91,7 +91,7 @@ for i in range(n):
             G.add_node(index,p=0,pos=pos,neigh=neighbours(index))
 
 # przesuwanie wezlow zgodnie z length_wiggle_param, oprócz węzłów brzegowych
-for node in G.nodes():
+for node in G.nodes:
     if (node >= n and node < n*(n-1) and (node%n != 0) and ((node+1)%n != 0)):
         r = np.random.ranf() * 0.5
         fi = np.random.ranf() * 2 * np.pi
@@ -103,7 +103,7 @@ for node in G.nodes():
 
 
 #deklaracja połączeń: węzeł początkowy, węzeł końcowy, grubosć (z wylosowanym szumem), przepływ
-for node in G.nodes():
+for node in G.nodes:
     for ind in G.nodes[node]["neigh"]:
         if (ind>node):
             d0=np.random.rand()*diamater_wiggle_param+1
@@ -142,7 +142,7 @@ matrix=np.zeros((n*n,n*n))
 for i in range(N):
     print(f'{i+1}/{N}')
     #print (i)
-    for node in G.nodes():
+    for node in G.nodes:
         if (node>=n and node<n*(n-1)):
             matrix[node][node]=0
             for ind in G.nodes[node]["neigh"]:
@@ -162,10 +162,10 @@ for i in range(N):
     #    pnow=np.linalg.solve(matrix,presult)
 
     # aktualizujemy cisnienia w siatce
-    for node in G.nodes():
+    for node in G.nodes:
         G.nodes[node]["p"] = pnow[node]
         # na podstawie nowych cisnień obliczamy przepływy w każdej krawędzi, a z nich siłę
-    for node in G.nodes():
+    for node in G.nodes:
         for ind in G.nodes[node]["neigh"]:
             if (ind > node):
                 G[node][ind]["q"] = c1 * (G[node][ind]["d"]) ** 4 * (1/G[node][ind]['length']) * (G.nodes[node]["p"] - G.nodes[ind]["p"])
