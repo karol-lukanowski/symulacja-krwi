@@ -9,16 +9,16 @@ import scipy.sparse.linalg as sprlin
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 50  # rozmiar siatki
+n = 80  # rozmiar siatki
 iters = 100  # liczba iteracji
 
-length_wiggle_param = 0.8
+length_wiggle_param = 1
 diameter_wiggle_param = 0
 
 qdrawconst = 5
 ddrawconst = 3
 
-SPARSE = 0 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
+SPARSE = 1 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
 
 qin = 1  # ilosć wpływającej krwi
 presout = 0  # cisnienie na wyjsciu
@@ -171,13 +171,16 @@ def create_pressure_flow_vector(qin, presout):
     return presult
 
 def create_matrix(G):
-    def create_nonsparse_matrix(G):
+    if (SPARSE == 0): return np.zeros((n * n, n * n))
+    if (SPARSE == 1): return spr.csc_matrix(([], ([], [])), shape=(n * n, n * n))
+def update_matrix(G):
+    def update_nonsparse_matrix(G):
         """
         macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
         z kolei ostatnie n wierszy utrzymuje wyjsciowe cisnienie równe 0
         srodkowe wiersze utrzymują sumę wpływów/wypływów w każdym węźle równa 0
         """
-        matrix = np.zeros((n * n, n * n))
+        #matrix = np.zeros((n * n, n * n))
         for node in G.nodes:
             if (node >= n and node < n * (n - 1)):
                 matrix[node][node] = 0
@@ -195,8 +198,8 @@ def create_matrix(G):
                     matrix[node][node] -= c1 * d ** 4 / l
             else:
                 matrix[node][node] = 1
-        return spr.csc_matrix(matrix)
-    def create_sparse_matrix(G):
+        return matrix
+    def update_sparse_matrix(G):
         """
         macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
         z kolei ostatnie n wierszy utrzymuje wyjsciowe cisnienie równe 0
@@ -238,15 +241,16 @@ def create_matrix(G):
         S = spr.csc_matrix((data, (row, col)), shape=(n * n, n * n))
         return S
 
-    if SPARSE == 1: return create_sparse_matrix(G)
-    elif SPARSE == 0: return create_nonsparse_matrix(G)
+    if SPARSE == 1: return update_sparse_matrix(G)
+    elif SPARSE == 0: return update_nonsparse_matrix(G)
 
 def solve_equation_for_pressure(matrix, presult):
     """
     Zamieniamy macierz w równaniu na formę macierzy rzadkiej
     w celu usprawnienia obliczeń
     """
-    pnow = sprlin.spsolve(matrix, presult)
+    if (SPARSE == 0): pnow = sprlin.spsolve(spr.csc_matrix(matrix), presult)
+    elif (SPARSE == 1): pnow = sprlin.spsolve(matrix, presult)
     return pnow
 def update_pressure_in_nodes(G, pnow):
     for node in G.nodes:
@@ -340,10 +344,11 @@ def drawd(G, name, ddrawconst=ddrawconst, normalize=True):
 
 G = Build_triangular_net(n)
 presult = create_pressure_flow_vector(qin, presout)
+matrix = create_matrix(G)
 
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
-    matrix = create_matrix(G)
+    matrix = update_matrix(G)
     pnow = solve_equation_for_pressure(matrix, presult)
     G = update_pressure_in_nodes(G, pnow)
 
@@ -356,6 +361,7 @@ for i in range(iters):
                 F = find_force(q, d)
                 G = update_diameter_in_edge(node, ind, F)
 
-drawq(G, "q.png")
-drawd(G, "d.png")
+    #if (i%20 == 0):
+        #drawq(G, "{:4d}q.png".format(i//20))
 
+drawq(G, 'def.png')
