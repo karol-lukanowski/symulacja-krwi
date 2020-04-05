@@ -20,8 +20,8 @@ W każdym kroku czasowym:
 4.  Następnie rozszerzamy scianki na podstawie wyliczonej siły
 """
 
-R = 40
-R_s = 10
+R = 25
+R_s = 5
 
 def r_squared(G, node):
     n = int(len(G) ** 0.5)
@@ -31,7 +31,7 @@ def r_squared(G, node):
     return r_sqr
 
 #tworzenie tablicy ktora trzyma info czy jest node w wewnetrznym okregu czy nie
-def inner_circle(G):
+def get_inner_circle(G):
     inner_circle = np.zeros(len(G))
     for node in G.nodes():
         if r_squared(G, node) < R_s**2:
@@ -40,11 +40,12 @@ def inner_circle(G):
 
 def donut_setup(G):
     # lista krawedzi przekraczajacych boundary, pierwszy node to niech bedzie ten w srodku
-    inn_circle = inner_circle(G)
+    global inner_circle, boundary_nodes, boundary_edges
+    inner_circle = get_inner_circle(G)
     boundary_edges = []
     for edge in G.edges():
         n1, n2 = edge
-        if inn_circle[n1] + inn_circle[n2] == 1:
+        if inner_circle[n1] + inner_circle[n2] == 1:
             # czyli jestesmy na krawedzi przekraczajacej obwod wewnetrznego okregu
             r1, r2 = r_squared(G, n1), r_squared(G, n2)
             if (r1 <= r2):
@@ -55,9 +56,10 @@ def donut_setup(G):
     boundary_nodes = set([edge[0] for edge in boundary_edges])
     boundary_nodes = sorted(list(boundary_nodes))
 
-    return inn_circle, boundary_edges, boundary_nodes
+    return inner_circle, boundary_nodes, boundary_edges
 
-def create_pressure_flow_vector(G, n, qin, presout, boundary_nodes):
+
+def create_pressure_flow_vector(G, n, qin, presout):
     presult = np.zeros(n*n)
     presult[boundary_nodes] = -qin
     return presult
@@ -67,7 +69,8 @@ def create_matrix(G, SPARSE=0):
     if (SPARSE == 0): return np.zeros((n * n, n * n))
     if (SPARSE == 1): return spr.csc_matrix(([], ([], [])), shape=(n * n, n * n))
 
-def update_matrix(G, matrix, SPARSE=0, boundary_edges=[], boundary_nodes=[]):
+def update_matrix(G, matrix, SPARSE=0):
+    global boundary_edges, boundary_nodes
     n = int(len(G) ** 0.5)
     def update_nonsparse_cylindrical_matrix(G):
 

@@ -11,7 +11,7 @@ import draw_net as Dr
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 101  # rozmiar siatki
+n = 71  # rozmiar siatki
 iters = 205  # liczba iteracji
 
 length_wiggle_param = 1
@@ -37,7 +37,15 @@ def solve_equation_for_pressure(matrix, presult):
     """
     if (SPARSE == 0): pnow = sprlin.spsolve(spr.csc_matrix(matrix), presult)
     elif (SPARSE == 1): pnow = sprlin.spsolve(matrix, presult)
+
+    # jeżeli jest geometria donutowa to robimy fix
+    try: pnow = donut_fix(inner_circle, boundary_nodes, pnow)
+    except NameError:
+        print('gowno')
+        pass
+
     return pnow
+
 def update_graph(G, pnow):
     def d_update(F):
         #zmiana średnicy pod względem siły F
@@ -71,12 +79,12 @@ def update_graph(G, pnow):
 
 #=================  IMPORT GEOMETRII  ==================================================================================
 
-from rectangular_geom import *
+#from rectangular_geom import *
 
 #from cylindrical_geom import *
 
-#from donut_geom import *
-#inner_circle, boundary_edges, boundary_nodes = donut_setup(G)
+from donut_geom import *
+inner_circle, boundary_nodes, boundary_edges = donut_setup(G)
 
 #=================  PROGRAM WŁAŚCIWY  ==================================================================================
 
@@ -88,11 +96,7 @@ for i in range(iters):
 
     matrix = update_matrix(G, matrix, SPARSE)
     pnow = solve_equation_for_pressure(matrix, presult)
-
-    # TYLKO DLA DONUT GEOM - DLA INNEJ ZAKOMENTUJ
-    #pnow = donut_fix(inner_circle, boundary_nodes, pnow)
-
     G = update_graph(G, pnow)
 
-    if (i%50 == 0):
+    if (i%30 == 0):
         Dr.drawq(G, n, f"q{i}.png")
