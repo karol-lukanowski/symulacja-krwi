@@ -10,7 +10,6 @@ Funkcja budująca siatkę trójkątną o wymiarach n x n węzłów, jako graf
    
 def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_param = 0):
     G = nx.Graph()    
-    lens = []
     # sąsiedztwo: pierwsza i ostatnia kolumna siatki ma tylko po jednym połączeniu,
     # żeby łatwiej trzymać stały wpływ i cisnienie; poza tym standardowe sąsiedztwo
     # dla trójkatnej siatki
@@ -95,8 +94,7 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
                 pos = G.nodes[node]['pos']
                 new_x, new_y = pos[0] + dx, pos[1] + dy
                 G.nodes[node]['pos'] = (new_x, new_y)
-        import matplotlib.pyplot as plt
-
+                  
     def add_edges(diameter_wiggle_param, l):
         """
         Deklaracja połączeń: węzeł początkowy, węzeł końcowy, grubosć (z wylosowanym szumem), przepływ
