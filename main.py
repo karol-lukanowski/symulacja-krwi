@@ -41,7 +41,6 @@ def solve_equation_for_pressure(matrix, presult):
     # jeżeli jest geometria donutowa to robimy fix
     try: pnow = donut_fix(inner_circle, boundary_nodes, pnow)
     except NameError:
-        print('gowno')
         pass
 
     return pnow
