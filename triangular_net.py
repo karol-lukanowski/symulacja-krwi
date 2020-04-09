@@ -10,6 +10,7 @@ Funkcja budująca siatkę trójkątną o wymiarach n x n węzłów, jako graf
    
 def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_param = 0):
     G = nx.Graph()    
+    lens = []
     # sąsiedztwo: pierwsza i ostatnia kolumna siatki ma tylko po jednym połączeniu,
     # żeby łatwiej trzymać stały wpływ i cisnienie; poza tym standardowe sąsiedztwo
     # dla trójkatnej siatki
@@ -85,7 +86,14 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
         """
         Przesuwanie wezlow zgodnie z length_wiggle_param, oprócz węzłów brzegowych
         """
+        def in_hexagon(x, y):
+            x, y = abs(x), abs(y)
+            if (x > 1 / (2 * (3 ** 0.5))) and (y > -(3 ** 0.5) * x + 1):
+                return 0
+            return 1
         for node in G.nodes:
+            # stare, wadliwe losowanie w kole
+            """
             if (node >= n and node < n*(n-1) and (node%n != 0) and ((node+1)%n != 0)):
                 r = np.random.ranf() * 0.5
                 fi = np.random.ranf() * 2 * np.pi
@@ -94,7 +102,17 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
                 pos = G.nodes[node]['pos']
                 new_x, new_y = pos[0] + dx, pos[1] + dy
                 G.nodes[node]['pos'] = (new_x, new_y)
-                  
+            """
+            # nowe losowanie w szesciokacie
+            if (node >= n and node < n * (n - 1) and (node % n != 0) and ((node + 1) % n != 0)):
+                dx, dy = np.random.uniform(-1 / 3 ** 0.5, 1 / 3 ** 0.5), np.random.uniform(-0.5, 0.5)
+                while not in_hexagon(dx, dy):
+                    dx, dy = np.random.uniform(-1 / 3 ** 0.5, 1 / 3 ** 0.5), np.random.uniform(-0.5, 0.5)
+                dx *= length_wiggle_param
+                dy *= length_wiggle_param
+                pos = G.nodes[node]['pos']
+                G.nodes[node]['pos'] = (pos[0]+dx, pos[1]+dy)
+
     def add_edges(diameter_wiggle_param, l):
         """
         Deklaracja połączeń: węzeł początkowy, węzeł końcowy, grubosć (z wylosowanym szumem), przepływ
