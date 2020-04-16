@@ -11,11 +11,11 @@ import draw_net as Dr
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 71  # rozmiar siatki
-iters = 205  # liczba iteracji
+n = 71 # rozmiar siatki
+iters = 300  # liczba iteracji
 
 length_wiggle_param = 1
-diameter_wiggle_param = 1
+diameter_wiggle_param = 3
 
 SPARSE = 0 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
 
@@ -26,7 +26,6 @@ l = 1  # początkowa długosć krawędzi
 c1 = np.pi / (128 * mu)  # stała przepływu
 c2 = 64 * mu / (np.pi)  # stała siły
 
-G = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
 
 #=================  FUNKCJE WSPÓLNE DLA KAŻDEJ GEOMETRII  ==============================================================
 
@@ -78,24 +77,33 @@ def update_graph(G, pnow):
 
 #=================  IMPORT GEOMETRII  ==================================================================================
 
-#from rectangular_geom import *
+for ex in range(11, 12):
 
-#from cylindrical_geom import *
+    #from rectangular_geom import *
+    G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
 
-from donut_geom import *
-inner_circle, boundary_nodes, boundary_edges = donut_setup(G)
+    #from donut_geom import *
+    #inner_circle, boundary_nodes, boundary_edges = donut_setup(G)
 
-#=================  PROGRAM WŁAŚCIWY  ==================================================================================
+    from cylindrical_geom import *
 
-presult = create_pressure_flow_vector(G, n, qin, presout)
-matrix = create_matrix(G, SPARSE=SPARSE)
+    #=================  PROGRAM WŁAŚCIWY  ==================================================================================
 
-for i in range(iters):
-    print(f'Iter {i + 1}/{iters}')
+    presult = create_pressure_flow_vector(G, n, qin, presout)
+    matrix = create_matrix(G, SPARSE=SPARSE)
 
-    matrix = update_matrix(G, matrix, SPARSE)
-    pnow = solve_equation_for_pressure(matrix, presult)
-    G = update_graph(G, pnow)
+    def r_squared(node):
+        x0, y0 = G.nodes[n*n//2]["pos"]
+        x, y = G.nodes[node]['pos']
+        r_sqr = (x - x0) ** 2 + (y - y0) ** 2
+        return r_sqr
 
-    if (i%30 == 0):
-        Dr.drawq(G, n, f"q{i}.png")
+    for i in range(iters):
+        print(f'Iter {i + 1}/{iters}')
+
+        matrix = update_matrix(G, matrix, SPARSE)
+        pnow = solve_equation_for_pressure(matrix, presult)
+        G = update_graph(G, pnow)
+
+    Dr.drawq(G, n, f'q_l1_d1_{ex}.png')
+    del G
