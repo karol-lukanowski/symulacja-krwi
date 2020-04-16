@@ -20,7 +20,7 @@ W każdym kroku czasowym:
 4.  Następnie rozszerzamy scianki na podstawie wyliczonej siły
 """
 
-R = 40
+R = 25
 
 def create_pressure_flow_vector(G, n, qin=1, presout=0):
     """
