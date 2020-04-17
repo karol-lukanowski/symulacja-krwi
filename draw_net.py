@@ -24,10 +24,14 @@ def drawq(G, n, name, qdrawconst = qdrawconst, normalize = True):
     if (normalize == False):
         qmax = 1
         qdrawconst = 1
-    
+    Ed = []
+    Qu = []
     for edge in G.edges(data='q'):
         if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
-            nx.draw_networkx_edges(G, pos, edgelist=[edge], width=qdrawconst * edge[2] / qmax)
+            x,y,q = edge
+            Ed.append((x,y))
+            Qu.append(q)
+    nx.draw_networkx_edges(G, pos, edgelist=Ed, width=qdrawconst * Qu / qmax)
     
     plt.axis('equal')
     plt.savefig(name)
@@ -49,11 +53,15 @@ def drawd(G, n, name, ddrawconst = ddrawconst, normalize = True):
     if (normalize == False):
         dmax = 1
         ddrawconst = 1
-
+    Ed = []
+    Dia = []
     for edge in G.edges(data='d'):
         if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
-            nx.draw_networkx_edges(G, pos, edgelist=[edge], width=ddrawconst * edge[2] / dmax)
-    
+            x,y,d = edge
+            Ed.append((x,y))
+            Dia.append(d)
+    nx.draw_networkx_edges(G, pos, edgelist=Ed, width=qdrawconst * Dia / dmax)
+
     plt.axis('equal')
     plt.savefig(name)
     plt.close()
