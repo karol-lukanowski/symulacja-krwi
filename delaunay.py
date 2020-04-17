@@ -3,11 +3,12 @@ import networkx as nx
 import numpy as np
 import scipy.spatial
 
-def Build_delaunay_net(N, diameter_wiggle_param=1):
+def Build_delaunay_net(n, diameter_wiggle_param=1):
+    N = n**2
     points = []
     for i in range(N):
-        x = np.random.rand()*np.sqrt(N)
-        y = np.random.rand()*np.sqrt(N)        
+        x = np.random.rand()*n
+        y = np.random.rand()*n        
         points.append((x,y)) 
     
     # make a Delaunay triangulation of the point data
@@ -16,16 +17,16 @@ def Build_delaunay_net(N, diameter_wiggle_param=1):
     # create a set for edges that are indexes of the points
     edges = set()
     # for each Delaunay triangle
-    for n in range(delTri.nsimplex):
+    for node in range(delTri.nsimplex):
         # for each edge of the triangle
         # sort the vertices
         # (sorting avoids duplicated edges being added to the set)
         # and add to the edges set
-        edge = sorted([delTri.vertices[n,0], delTri.vertices[n,1]])
+        edge = sorted([delTri.vertices[node,0], delTri.vertices[node,1]])
         edges.add((edge[0], edge[1]))
-        edge = sorted([delTri.vertices[n,0], delTri.vertices[n,2]])
+        edge = sorted([delTri.vertices[node,0], delTri.vertices[node,2]])
         edges.add((edge[0], edge[1]))
-        edge = sorted([delTri.vertices[n,1], delTri.vertices[n,2]])
+        edge = sorted([delTri.vertices[node,1], delTri.vertices[node,2]])
         edges.add((edge[0], edge[1]))
     
     
@@ -33,7 +34,7 @@ def Build_delaunay_net(N, diameter_wiggle_param=1):
     G = nx.Graph(list(edges))
     
     for node in G.nodes:
-        G.node[node]["pos"]= points[node]
+        G.nodes[node]["pos"]= points[node]
 
     def find_edges_lengths_and_diameters():
         length_avr = 0
@@ -46,6 +47,8 @@ def Build_delaunay_net(N, diameter_wiggle_param=1):
             G[node][neigh]['length'] = l
             length_avr += l
             G[node][neigh]['d'] = np.random.rand() * diameter_wiggle_param + 1
+            G[node][neigh]['q'] = 0
+
         length_avr /= len(G.edges())
         #Usunięcie zbyt długich krawędzi (szczególnie tych po brzegu)
         Gcopy = G.copy()
@@ -54,16 +57,32 @@ def Build_delaunay_net(N, diameter_wiggle_param=1):
             l = G[node][neigh]['length']
             if l > 3*length_avr:
                 G.remove_edge(node, neigh)
+    def find_center_node():
+        x0 = y0 = n/2
+        pos0 = (x0,y0)
+        Min = 100*n
+        for node in G.nodes:
+            pos = G.nodes[node]["pos"]
+            r =  np.linalg.norm(np.array(pos)-np.array(pos0))
+            if r < Min:
+                Min = r
+                id_center = node
+        return id_center
     find_edges_lengths_and_diameters()
     '''
     plt.figure(figsize=(10, 10))
     nx.draw(G,pos = points,node_size=30)
+    id_center = find_center_node()
+    print("hihi")
+    nl = []
+    nl.append(id_center)
+    nx.draw_networkx(G,pos = points, nodelist= nl,node_size=50, node_color='r',with_labels = False)
+    print("hehe")
     plt.savefig("xd1", dpi=150)
-    
     plt.show()
     '''
     return G
 '''
-N = 1000 
-Build_delaunay_net(N)
+n = 71
+Build_delaunay_net(n)
 '''
