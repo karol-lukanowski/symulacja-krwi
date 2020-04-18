@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
-qdrawconst = 10
+qdrawconst = 5
 ddrawconst = 3
 
 
