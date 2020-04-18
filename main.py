@@ -8,11 +8,12 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import triangular_net as Tr
 import draw_net as Dr
+from geometry import set_geometry
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
 n = 71 # rozmiar siatki
-iters = 300  # liczba iteracji
+iters = 301  # liczba iteracji
 
 length_wiggle_param = 1
 diameter_wiggle_param = 3
@@ -28,6 +29,11 @@ c2 = 64 * mu / (np.pi)  # stała siły
 
 
 #=================  FUNKCJE WSPÓLNE DLA KAŻDEJ GEOMETRII  ==============================================================
+
+def create_matrix(G, SPARSE=0):
+    n = int(len(G)**0.5)
+    if (SPARSE == 0): return np.zeros((n * n, n * n))
+    if (SPARSE == 1): return spr.csc_matrix(([], ([], [])), shape=(n * n, n * n))
 
 def solve_equation_for_pressure(matrix, presult):
     """
@@ -75,16 +81,99 @@ def update_graph(G, pnow):
 
     return G
 
-#=================  IMPORT GEOMETRII  ==================================================================================
+def create_pressure_flow_vector(G, n, qin=1, presout=0):
+    global in_nodes, out_nodes
+    presult = np.zeros(n * n)
+    for node in in_nodes:
+        presult[node] = -qin
+    for node in out_nodes:
+        presult[node] = presout
+    return presult
+
+def update_matrix(G, matrix, SPARSE):
+    global in_nodes, out_nodes, reg_nodes, in_edges
+    n = int(len(G) ** 0.5)
+    def update_nonsparse_matrix(G):
+        """
+        macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
+        z kolei ostatnie n wierszy utrzymuje wyjsciowe cisnienie równe 0
+        srodkowe wiersze utrzymują sumę wpływów/wypływów w każdym węźle równa 0
+        """
+        #matrix = np.zeros((n * n, n * n))
+
+        for node in reg_nodes:
+            matrix[node][node] = 0
+            for ind in G.neighbors(node):
+                d = G[node][ind]["d"]
+                l = G[node][ind]['length']
+                matrix[node][ind] = c1 * d ** 4 / l
+                matrix[node][node] -= c1 * d ** 4 / l
+
+        for node in out_nodes:
+            matrix[node][node] = 1
+
+        insert = [0]*len(G)
+        for n1, n2 in in_edges:
+            d = G[n1][n2]['d']
+            l = G[n1][n2]['length']
+            insert[n2] += c1*d**4 / l
+
+        sum_insert = np.sum(insert)
+        for node in in_nodes:
+            matrix[node][:] = insert
+            matrix[node][node] -= sum_insert
+
+        return matrix
+    def update_sparse_matrix(G):
+        """
+        macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
+        z kolei ostatnie n wierszy utrzymuje wyjsciowe cisnienie równe 0
+        srodkowe wiersze utrzymują sumę wpływów/wypływów w każdym węźle równa 0
+        """
+        row = np.array([])  # numer wiersza w którym będzie wartoć
+        col = np.array([])  # numer kolumny w której będzie wartoć
+        data = np.array([])  # wartosć
+
+        for node in G.nodes:
+            if (node >= n and node < n * (n - 1)):
+                row = np.append(row, node)
+                col = np.append(col, node)
+                data = np.append(data, 0)
+                k = data.size - 1
+                for ind in G.nodes[node]["neigh"]:
+                    d = G[node][ind]["d"]
+                    l = G[node][ind]['length']
+                    row = np.append(row, node)
+                    col = np.append(col, ind)
+                    data = np.append(data, c1 * d ** 4 / l)
+                    data[k] -= c1 * d ** 4 / l
+            elif (node < n):
+                row = np.append(row, node)
+                col = np.append(col, node)
+                data = np.append(data, 0)
+                k = data.size - 1
+                for ind in range(n):
+                    d = G[ind][ind + n]["d"]
+                    l = G[ind][ind + n]['length']
+                    row = np.append(row, node)
+                    col = np.append(col, ind + n)
+                    data = np.append(data, c1 * d ** 4 / l)
+                    data[k] -= c1 * d ** 4 / l
+            else:
+                row = np.append(row, node)
+                col = np.append(col, node)
+                data = np.append(data, 1)
+        S = spr.csc_matrix((data, (row, col)), shape=(n * n, n * n))
+        return S
+
+    if SPARSE == 1: return update_sparse_matrix(G)
+    elif SPARSE == 0: return update_nonsparse_matrix(G)
+
+#=================  GRAF I GEOMETRIA  ==================================================================================
 
 G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
 
-#from rectangular_geom import *
-
-#from donut_geom import *
-#inner_circle, boundary_nodes, boundary_edges = donut_setup(G)
-
-from cylindrical_geom import *
+in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=28, R_s=7)
 
 #=================  PROGRAM WŁAŚCIWY  ==================================================================================
 
@@ -98,4 +187,6 @@ for i in range(iters):
     pnow = solve_equation_for_pressure(matrix, presult)
     G = update_graph(G, pnow)
 
-Dr.drawq(G, n, 'q.png')
+    if i%50 == 0:
+        Dr.drawq(G, n, f'{i//50:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
+
