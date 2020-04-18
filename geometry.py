@@ -99,7 +99,7 @@ def find_out_nodes(G):
     n0 = 1
     return search_nodes(G, n0)
 
-def set_geometry(n, G=[], geo='rect', R=25, R_s=5):
+def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
     def rect_default_nodes():
         in_nodes = list(range(n))
         out_nodes = list(range(n * (n - 1), n * n))
@@ -141,6 +141,8 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5):
         in_nodes, out_nodes = cyl_default_nodes()
     elif geo == 'donut':
         in_nodes, out_nodes = don_default_nodes()
+    elif geo == 'own':
+        in_nodes, out_nodes = kwargs['in_nodes'], kwargs['out_nodes']
     else:
         print('Wrong geometry specified')
         return 0
