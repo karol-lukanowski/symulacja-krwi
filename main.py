@@ -8,18 +8,19 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import triangular_net as Tr
 import draw_net as Dr
+from geometry import set_geometry
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 71 # rozmiar siatki
-iters = 301  # liczba iteracji
+n = 201 # rozmiar siatki
+iters = 501  # liczba iteracji
 
 length_wiggle_param = 1
 diameter_wiggle_param = 3
 
-SPARSE = 0 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
+SPARSE = 1 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
 
-qin = 1  # ilosć wpływającej krwi
+qin = 10  # ilosć wpływającej krwi
 presout = 0  # cisnienie na wyjsciu
 mu = 0.0035  # współczynnik lepkosci
 l = 1  # początkowa długosć krawędzi
@@ -30,9 +31,53 @@ c2 = 64 * mu / (np.pi)  # stała siły
 #=================  FUNKCJE WSPÓLNE DLA KAŻDEJ GEOMETRII  ==============================================================
 
 def create_matrix(G, SPARSE=0):
-    n = int(len(G)**0.5)
+    def create_sparse_matrix(G):
+        data, row, col = [], [], []
+        for node in reg_nodes:
+            data_for_this_node = 0
+            for neigh in G.neighbors(node):
+                d = G[node][neigh]['d']
+                l = G[node][neigh]['length']
+                row.append(node)
+                col.append(neigh)
+                data.append(c1 * d ** 4 / l)
+                data_for_this_node -= c1 * d ** 4 / l
+            row.append(node)
+            col.append(node)
+            data.append(data_for_this_node)
+
+        for node in out_nodes:
+            row.append(node)
+            col.append(node)
+            data.append(1)
+
+        insert = [0] * len(G)
+        for n1, n2 in in_edges:
+            d = G[n1][n2]['d']
+            l = G[n1][n2]['length']
+            insert[n2] += c1 * d ** 4 / l
+
+        sum_insert = np.sum(insert)
+
+        for node in in_nodes:
+            for i in range(len(G)):
+                if i == node or insert[i] == 0: continue
+                row.append(node)
+                col.append(i)
+                data.append(insert[i])
+
+            row.append(node)
+            col.append(node)
+            data.append(-sum_insert)
+
+        # posortujmy teraz dane tak, aby były najpierw po row, potem po column
+        to_sort = list(zip(data, row, col))
+        to_sort = sorted(to_sort, key=lambda elem: elem[1] * n ** 2 + elem[2])
+        data, row, col = zip(*to_sort)
+
+        return spr.csr_matrix((data, (row, col)), shape=(n * n, n * n))
     if (SPARSE == 0): return np.zeros((n * n, n * n))
-    if (SPARSE == 1): return spr.csc_matrix(([], ([], [])), shape=(n * n, n * n))
+    if (SPARSE == 1): return create_sparse_matrix(G)
 
 def solve_equation_for_pressure(matrix, presult):
     """
@@ -41,11 +86,6 @@ def solve_equation_for_pressure(matrix, presult):
     """
     if (SPARSE == 0): pnow = sprlin.spsolve(spr.csc_matrix(matrix), presult)
     elif (SPARSE == 1): pnow = sprlin.spsolve(matrix, presult)
-
-    # jeżeli jest geometria donutowa to robimy fix
-    try: pnow = donut_fix(inner_circle, boundary_nodes, pnow)
-    except NameError:
-        pass
 
     return pnow
 
@@ -80,7 +120,7 @@ def update_graph(G, pnow):
 
     return G
 
-def create_pressure_flow_vector2(G, n, qin=1, presout=0):
+def create_pressure_flow_vector(G, n, qin=1, presout=0):
     global in_nodes, out_nodes
     presult = np.zeros(n * n)
     for node in in_nodes:
@@ -89,9 +129,8 @@ def create_pressure_flow_vector2(G, n, qin=1, presout=0):
         presult[node] = presout
     return presult
 
-def update_matrix2(G, matrix, SPARSE):
+def update_matrix(G, matrix, SPARSE):
     global in_nodes, out_nodes, reg_nodes, in_edges
-    n = int(len(G) ** 0.5)
     def update_nonsparse_matrix(G):
         """
         macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
@@ -124,86 +163,70 @@ def update_matrix2(G, matrix, SPARSE):
 
         return matrix
     def update_sparse_matrix(G):
-        """
-        macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
-        z kolei ostatnie n wierszy utrzymuje wyjsciowe cisnienie równe 0
-        srodkowe wiersze utrzymują sumę wpływów/wypływów w każdym węźle równa 0
-        """
-        row = np.array([])  # numer wiersza w którym będzie wartoć
-        col = np.array([])  # numer kolumny w której będzie wartoć
-        data = np.array([])  # wartosć
+        data = []
+        pos = []
+        for node in reg_nodes:
+            data_for_this_node = 0
+            for neigh in G.neighbors(node):
+                d = G[node][neigh]['d']
+                l = G[node][neigh]['length']
+                data.append(c1 * d ** 4 / l)
+                pos.append(node * n ** 2 + neigh)
+                data_for_this_node -= c1 * d ** 4 / l
+            data.append(data_for_this_node)
+            pos.append(node * n ** 2 + node)
 
-        for node in G.nodes:
-            if (node >= n and node < n * (n - 1)):
-                row = np.append(row, node)
-                col = np.append(col, node)
-                data = np.append(data, 0)
-                k = data.size - 1
-                for ind in G.nodes[node]["neigh"]:
-                    d = G[node][ind]["d"]
-                    l = G[node][ind]['length']
-                    row = np.append(row, node)
-                    col = np.append(col, ind)
-                    data = np.append(data, c1 * d ** 4 / l)
-                    data[k] -= c1 * d ** 4 / l
-            elif (node < n):
-                row = np.append(row, node)
-                col = np.append(col, node)
-                data = np.append(data, 0)
-                k = data.size - 1
-                for ind in range(n):
-                    d = G[ind][ind + n]["d"]
-                    l = G[ind][ind + n]['length']
-                    row = np.append(row, node)
-                    col = np.append(col, ind + n)
-                    data = np.append(data, c1 * d ** 4 / l)
-                    data[k] -= c1 * d ** 4 / l
-            else:
-                row = np.append(row, node)
-                col = np.append(col, node)
-                data = np.append(data, 1)
-        S = spr.csc_matrix((data, (row, col)), shape=(n * n, n * n))
-        return S
+        for node in out_nodes:
+            data.append(1)
+            pos.append(node * n ** 2 + node)
+
+        insert = [0] * len(G)
+        for n1, n2 in in_edges:
+            d = G[n1][n2]['d']
+            l = G[n1][n2]['length']
+            insert[n2] += c1 * d ** 4 / l
+
+        sum_insert = np.sum(insert)
+
+        for node in in_nodes:
+            for i in range(len(G)):
+                if i == node or insert[i] == 0: continue
+                data.append(insert[i])
+                pos.append(node * n ** 2 + i)
+
+            data.append(-sum_insert)
+            pos.append(node * n ** 2 + node)
+
+        to_sort = zip(data, pos)
+        to_sort = sorted(to_sort, key=lambda elem: elem[1])
+        data, pos = zip(*to_sort)
+
+        global indices, indptr
+        return spr.csr_matrix((data, indices, indptr), shape=(n * n, n * n))
 
     if SPARSE == 1: return update_sparse_matrix(G)
     elif SPARSE == 0: return update_nonsparse_matrix(G)
 
-#=================  IMPORT GEOMETRII  ==================================================================================
+#=================  GRAF I GEOMETRIA  ==================================================================================
 
 G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
 
-#from rectangular_geom import *
-
-#from donut_geom import *
-#inner_circle, boundary_nodes, boundary_edges = donut_setup(G)
-
-#from cylindrical_geom import *
-
-from donut_geom import *
-
-#=================  NODES  =============================================================================================
-# Aby samemu ustawić, trzeba tutaj zadeklarować in_nodes i out_nodes
-#in_nodes = [50]
-#out_nodes = [5020]
-in_nodes, out_nodes = default_nodes(n, G)
-reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
-in_edges = []
-for node in in_nodes:
-    for neigh in G.neighbors(node):
-        in_edges.append((node, neigh))
+in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=80)
 
 #=================  PROGRAM WŁAŚCIWY  ==================================================================================
 
-presult = create_pressure_flow_vector2(G, n, qin, presout)
+presult = create_pressure_flow_vector(G, n, qin, presout)
 matrix = create_matrix(G, SPARSE=SPARSE)
+if SPARSE: indices, indptr = matrix.indices, matrix.indptr
 
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
 
-    matrix = update_matrix2(G, matrix, SPARSE)
+    matrix = update_matrix(G, matrix, SPARSE)
     pnow = solve_equation_for_pressure(matrix, presult)
     G = update_graph(G, pnow)
 
-    if i%50 == 0:
-        Dr.drawq(G, n, f'{i//50:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
+    print(pnow[in_nodes])
 
+    if i%100 == 0:
+        Dr.drawq(G, n, f'{i//50:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
