@@ -151,6 +151,6 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
     reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
     for node in in_nodes:
         for neigh in G.neighbors(node):
-            in_edges.append((node, neigh))
+            if neigh not in in_nodes: in_edges.append((node, neigh))
 
     return in_nodes, out_nodes, reg_nodes, in_edges
