@@ -8,13 +8,14 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import triangular_net as Tr
 import draw_net as Dr
+import delaunay as De
 from collections import defaultdict
 from geometry import set_geometry
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 51 # rozmiar siatki
-iters = 50  # liczba iteracji
+n = 101 # rozmiar siatki
+iters = 151  # liczba iteracji
 
 length_wiggle_param = 1
 diameter_wiggle_param = 3
@@ -239,10 +240,21 @@ def update_matrix(G, matrix, SPARSE):
 
 #=================  GRAF I GEOMETRIA  ==================================================================================
 
-G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
+#G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
+G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
 
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=20, R_s=5)
-in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=[15, 25, 30], out_nodes=[950, 903])
+
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5)
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
+in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='rect')
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=[15, 25, 30], out_nodes=[950, 903])
+
+
+
+out_edges = []
+for n1, n2 in G.edges():
+    if n1 in out_nodes or n2 in out_nodes:
+        out_edges.append((n1, n2))
 
 
 reg_reg_edges, reg_something_edges = [],  []
@@ -269,5 +281,10 @@ for i in range(iters):
     pnow = solve_equation_for_pressure(matrix, presult)
     G = update_graph(G, pnow)
 
-    #if i%50 == 0:
-    #    Dr.drawq(G, n, f'{i//50:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
+    if i%30 == 0:
+        Dr.drawq(G, n, f'{i//30:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
+        Q_in = 0
+        Q_out = 0
+        for n1, n2 in in_edges: Q_in += abs(G[n1][n2]['q'])
+        for n1, n2 in out_edges: Q_out += abs(G[n1][n2]['q'])
+        print('Q_in =', Q_in, 'Q_out =', Q_out)
