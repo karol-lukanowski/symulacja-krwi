@@ -35,7 +35,7 @@ F0=0.2
 F1=1
 z0=0
 z1=1
-
+F_mult = 10000
 
 #=================  FUNKCJE WSPÓLNE DLA KAŻDEJ GEOMETRII  ==============================================================
 
@@ -118,18 +118,20 @@ def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
                 return z1
         else:
             return z0
+
+
     reg_reg_edges2, reg_something_edges2, in_edges2=[], [], []
     for n1, n2, d, l in reg_reg_edges:
-        F=10000*c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        F=F_mult*c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         dnew=d+d_update(F)
         reg_reg_edges2.append((n1, n2, dnew, l))
 
     for n1, n2, d, l in reg_something_edges:
-        F=10000*c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        F=F_mult*c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         dnew=d+d_update(F)
         reg_something_edges2.append((n1, n2, dnew, l))
     for n1, n2, d, l in in_edges:
-        F=10000*c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        F=F_mult*c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         dnew=d+d_update(F)
         in_edges2.append((n1, n2, dnew, l))
 
@@ -218,7 +220,7 @@ def update_matrix(G, matrix, SPARSE):
             for ins_node, ins in insert.items():
                 data.append((ins, node * nkw + ins_node))                
 
-        data = sorted(data, key=lambda elem: elem[1])
+        data.sort(key=lambda elem: elem[1])
 
         global indices, indptr
         return spr.csr_matrix(([datum[0] for datum in data], indices, indptr), shape=(nkw, nkw))
@@ -287,4 +289,3 @@ for i in range(iters):
        
         Dr.drawq(G, n, f'{i//50:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
     reg_reg_edges, reg_something_edges, in_edges=update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
-
