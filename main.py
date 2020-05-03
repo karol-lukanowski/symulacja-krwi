@@ -15,11 +15,12 @@ from geometry import set_geometry
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 201 # rozmiar siatki
+n = 151 # rozmiar siatki
 nkw=n**2
-iters = 801  # liczba iteracji
 
-length_wiggle_param = 1
+iters = 301  # liczba iteracji
+
+length_wiggle_param = 0
 diameter_wiggle_param = 3
 
 SPARSE = 1 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
@@ -36,6 +37,8 @@ F1=1
 z0=0
 z1=1
 F_mult = 10000
+dt = 0.5
+
 
 #=================  FUNKCJE WSPÓLNE DLA KAŻDEJ GEOMETRII  ==============================================================
 
@@ -110,13 +113,15 @@ def solve_equation_for_pressure(matrix, presult):
 def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
     def d_update(F):
         #zmiana średnicy pod względem siły F
+        result = 0
         if (F > F0):
             if (F < F1):
-                return z0+(F-F0)*(z1-z0)/(F1-F0)
+                result = z0+(F-F0)*(z1-z0)/(F1-F0)
             else:
-                return z1
+                result = z1
         else:
-            return z0
+            result = z0
+        return result * dt
 
 
     reg_reg_edges2, reg_something_edges2, in_edges2=[], [], []
@@ -228,20 +233,67 @@ def update_matrix(G, matrix, SPARSE):
     if SPARSE == 1: return update_sparse_matrix(G)
     elif SPARSE == 0: return update_nonsparse_matrix(G)
 
+def equidistant_geometry(R, xrange, yrange, how_many):
+    id_center = De.find_center_node(G, n, xrange=xrange, yrange=yrange)
+
+    def r_squared(node):
+        # x0, y0 = G.nodes[n*n//2]["pos"]
+        x0, y0 = G.nodes[id_center]['pos']
+        x, y = G.nodes[node]['pos']
+        r_sqr = (x - x0) ** 2 + (y - y0) ** 2
+        return r_sqr
+
+    boundary_nodes = []
+    for (n1, n2) in G.edges():
+        r1, r2 = r_squared(n1), r_squared(n2)
+        if r1 > r2:
+            n1, n2 = n2, n1
+            r1, r2 = r2, r1
+
+        n_b = n2
+
+        if r2 >= R ** 2 and r1 <= R ** 2:
+            # x, y = G.nodes[n_b]['pos'][0] - G.nodes[n**2 // 2]['pos'][0], G.nodes[n_b]['pos'][1] - G.nodes[n**2 // 2]['pos'][1]
+            x, y = G.nodes[n_b]['pos'][0] - G.nodes[id_center]['pos'][0], G.nodes[n_b]['pos'][1] - \
+                   G.nodes[id_center]['pos'][1]
+
+            if x == 0: x = 0.000001
+            if y == 0: y = 0.000001
+
+            if (x >= 0 and y >= 0):
+                fi = np.arctan(y / x)
+            elif (x < 0 and y >= 0):
+                fi = np.pi / 2 + np.arctan(-x / y)
+            elif (x < 0 and y < 0):
+                fi = np.pi + np.arctan(y / x)
+            else:
+                fi = (3 / 2) * np.pi + np.arctan(x / -y)
+            boundary_nodes.append([n_b, fi])
+    boundary_nodes.sort(key=lambda node: node[1])
+
+    boundary_nodes, fis = zip(*boundary_nodes)
+
+    num_of_out_nodes = how_many
+    out_indexes = np.round(np.linspace(0, len(boundary_nodes) - 1, num_of_out_nodes + 1)).astype(int)
+    out_nodes = list(np.array(boundary_nodes)[out_indexes[:-1]])
+    in_nodes = [id_center]
+
+    return in_nodes, out_nodes
 
 
 #=================  GRAF I GEOMETRIA  ==================================================================================
 
-G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
-#G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
+#G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
+G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
 
-in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5)
+
+in_nodes, out_nodes = equidistant_geometry(R = 50, xrange = n*np.sqrt(3)/2, yrange = n, how_many = 12)
+
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5)
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='rect')
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=[nkw//2 - n//2], out_nodes=[nkw//10, nkw//8, nkw//3, nkw//5])
+in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
 
-it = len(out_nodes)//5
-out_nodes = [out_nodes[it], out_nodes[2*it], out_nodes[3*it], out_nodes[4*it], out_nodes[5*it]]
 
 reg_reg_edges, reg_something_edges = [],  []
 for n1, n2 in G.edges():
@@ -264,7 +316,7 @@ for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
     matrix = update_matrix(G, matrix, SPARSE)
     pnow = solve_equation_for_pressure(matrix, presult)
-    if i%50 == 0:
+    if i%((iters-1)//5) == 0:
         Q_in = 0
         Q_out = 0
         for n1, n2, d, l in reg_reg_edges:
@@ -284,5 +336,5 @@ for i in range(iters):
         
         print('Q_in =', Q_in, 'Q_out =', Q_out)
        
-        Dr.drawq(G, n, f'{i//50:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
+        Dr.drawq(G, n, f'd{i//((iters-1)//5):04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
     reg_reg_edges, reg_something_edges, in_edges=update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
