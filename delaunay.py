@@ -23,11 +23,11 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         # (sorting avoids duplicated edges being added to the set)
         # and add to the edges set
         edge = sorted([delTri.vertices[node, 0], delTri.vertices[node, 1]])
-        edges.add((edge[0], edge[1]))
+        edges.add((int(edge[0]), int(edge[1])))
         edge = sorted([delTri.vertices[node, 0], delTri.vertices[node, 2]])
-        edges.add((edge[0], edge[1]))
+        edges.add((int(edge[0]), int(edge[1])))
         edge = sorted([delTri.vertices[node, 1], delTri.vertices[node, 2]])
-        edges.add((edge[0], edge[1]))
+        edges.add((int(edge[0]), int(edge[1])))
 
     # make a graph based on the Delaunay triangulation edges
     G = nx.Graph(list(edges))

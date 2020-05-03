@@ -17,7 +17,7 @@ from geometry import set_geometry
 
 n = 201 # rozmiar siatki
 nkw=n**2
-iters = 101  # liczba iteracji
+iters = 801  # liczba iteracji
 
 length_wiggle_param = 1
 diameter_wiggle_param = 3
@@ -88,10 +88,9 @@ def create_matrix(G, SPARSE=0):
                 row.append(node)
                 col.append(ins_node)
 
-
         # posortujmy teraz dane tak, aby były najpierw po row, potem po column
         to_sort = list(zip(data, row, col))
-        to_sort = sorted(to_sort, key=lambda elem: elem[1] * n ** 2 + elem[2])
+        to_sort = sorted(to_sort, key=lambda elem: elem[1] * nkw + elem[2])
         data, row, col = zip(*to_sort)
 
         return spr.csr_matrix((data, (row, col)), shape=(n * n, n * n))
@@ -233,16 +232,16 @@ def update_matrix(G, matrix, SPARSE):
 
 #=================  GRAF I GEOMETRIA  ==================================================================================
 
-#G, center_node=De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
-G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
+G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
+#G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
 
-
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5)
+in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5)
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
-in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='rect')
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=[15, 25, 30], out_nodes=[950, 903])
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='rect')
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=[nkw//2 - n//2], out_nodes=[nkw//10, nkw//8, nkw//3, nkw//5])
 
-
+it = len(out_nodes)//5
+out_nodes = [out_nodes[it], out_nodes[2*it], out_nodes[3*it], out_nodes[4*it], out_nodes[5*it]]
 
 reg_reg_edges, reg_something_edges = [],  []
 for n1, n2 in G.edges():
@@ -254,8 +253,6 @@ for n1, n2 in G.edges():
         reg_something_edges.append((n1, n2, d, l))
     elif (n2 not in in_nodes and n2 not in out_nodes):
         reg_something_edges.append((n2, n1, d, l ))
-
-
 
 #=================  PROGRAM WŁAŚCIWY  ==================================================================================
 
