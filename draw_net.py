@@ -14,7 +14,7 @@ def drawq(G, n, name, qdrawconst=qdrawconst, normalize=True, in_nodes=[], out_no
     """
     rysowanie przepływów
     """
-#    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(10, 10))
     pos = nx.get_node_attributes(G, 'pos')
 
     if (normalize == False):

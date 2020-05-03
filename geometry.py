@@ -156,5 +156,4 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
                 l = G[node][neigh]['length']
                 in_edges.append((node, neigh, d, l))
 
-
     return in_nodes, out_nodes, reg_nodes, in_edges
