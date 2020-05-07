@@ -56,18 +56,6 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
             if l > 3 * length_avr:
                 G.remove_edge(node, neigh)
 
-    def find_center_node():
-        x0 = y0 = n / 2
-        pos0 = (x0, y0)
-        Min = 100 * n
-        for node in G.nodes:
-            pos = G.nodes[node]["pos"]
-            r = np.linalg.norm(np.array(pos) - np.array(pos0))
-            if r < Min:
-                Min = r
-                id_center = node
-        return id_center
-
     find_edges_lengths_and_diameters()
 
     """
@@ -79,3 +67,15 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
     """
 
     return G
+
+def find_center_node(G, n, xrange, yrange):
+    x0, y0 = xrange / 2, yrange / 2
+    pos0 = (x0, y0)
+    Min = 100 * n
+    for node in G.nodes:
+        pos = G.nodes[node]["pos"]
+        r = np.linalg.norm(np.array(pos) - np.array(pos0))
+        if r < Min:
+            Min = r
+            id_center = node
+    return id_center
