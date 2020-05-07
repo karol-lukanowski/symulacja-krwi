@@ -10,7 +10,7 @@ qdrawconst = 5
 ddrawconst = 3
 
 
-def drawq(G, n, name, qdrawconst=qdrawconst, normalize=True, in_nodes=[], out_nodes=[]):
+def drawq(G, n, name, qdrawconst=qdrawconst, normalize=True, in_nodes=[], out_nodes=[], oxresult = []):
     """
     rysowanie przepływów
     """
@@ -44,6 +44,9 @@ def drawq(G, n, name, qdrawconst=qdrawconst, normalize=True, in_nodes=[], out_no
         x_out.append(pos[node][0])
         y_out.append(pos[node][1])
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
+
+    #### OXYGEN NODES ####
+    nx.draw_networkx_nodes(G, pos, node_size=20 * oxresult, node_color='b')
 
     plt.axis('equal')
     plt.savefig(name)

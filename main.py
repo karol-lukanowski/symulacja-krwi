@@ -11,16 +11,14 @@ import draw_net as Dr
 import delaunay as De
 from collections import defaultdict
 from geometry import set_geometry
-
+import time
 
 #=================  WARUNKI POCZĄTKOWE i STAŁE  ========================================================================
 
-n = 151 # rozmiar siatki
+n = 101 # rozmiar siatki
 nkw=n**2
 
-iters = 301  # liczba iteracji
-
-length_wiggle_param = 0
+length_wiggle_param = 1
 diameter_wiggle_param = 3
 
 SPARSE = 1 # 1 = twórz macierz rzadką, 0 = twórz zwykłą macierz
@@ -32,73 +30,21 @@ l = 1  # początkowa długosć krawędzi
 c1 = np.pi / (128 * mu)  # stała przepływu
 c2 = 64 * mu / (np.pi)  # stała siły
 
+D = 0.138 # współczynnik dyfuzji
+k = 0.137 # stała reakcji
+dth = 10 # graniczna grubosć
+
 F0=0.2
 F1=1
 z0=0
 z1=1
 F_mult = 10000
-dt = 0.5
+dt = 0.8
 
+iters = 301  # liczba iteracji
+save_every = 30
 
 #=================  FUNKCJE WSPÓLNE DLA KAŻDEJ GEOMETRII  ==============================================================
-
-def create_matrix(G, SPARSE=0):
-    def create_sparse_matrix(G):
-        data, row, col = [], [], []
-
-        diag = np.zeros(n * n)
-        for n1, n2, d, l in reg_reg_edges:
-            res = c1 * d ** 4 / l
-            data.append(res)
-            row.append(n1)
-            col.append(n2)
-            data.append(res)
-            row.append(n2)
-            col.append(n1)
-            diag[n1] -= res
-            diag[n2] -= res
-        for n1, n2, d, l in reg_something_edges:
-            res = c1 * d ** 4 / l
-            data.append(res)
-            row.append(n1)
-            col.append(n2)
-            diag[n1] -= res
-
-        for node, datum in enumerate(diag):
-            if datum != 0:
-                row.append(node)
-                col.append(node)
-                data.append(datum)
-
-        for node in out_nodes:
-            row.append(node)
-            col.append(node)
-            data.append(1)
-
-        insert = defaultdict(float)
-        for n1, n2, d, l in in_edges:
-            insert[n2] += c1 * d**4 / l
-
-        sum_insert = sum(insert.values())
-
-        for node in in_nodes:
-            data.append(-sum_insert)
-            row.append(node)
-            col.append(node)
-
-            for ins_node, ins in insert.items():
-                data.append(ins)
-                row.append(node)
-                col.append(ins_node)
-
-        # posortujmy teraz dane tak, aby były najpierw po row, potem po column
-        to_sort = list(zip(data, row, col))
-        to_sort = sorted(to_sort, key=lambda elem: elem[1] * nkw + elem[2])
-        data, row, col = zip(*to_sort)
-
-        return spr.csr_matrix((data, (row, col)), shape=(n * n, n * n))
-    if (SPARSE == 0): return np.zeros((n * n, n * n))
-    if (SPARSE == 1): return create_sparse_matrix(G)
 
 def solve_equation_for_pressure(matrix, presult):
     """
@@ -150,88 +96,53 @@ def create_pressure_flow_vector(G, n, qin=1, presout=0):
         presult[node] = presout
     return presult
 
-def update_matrix(G, matrix, SPARSE):
+def update_matrix():
     global in_nodes, out_nodes, reg_nodes, in_edges
-    def update_nonsparse_matrix(G):
-        """
-        macierz przepływów/cisnień; pierwsze n wierszy odpowiada za utrzymanie stałego wpływu:
-        z kolei ostatnie n wierszy utrzymuje wyjsciowe cisnienie równe 0
-        srodkowe wiersze utrzymują sumę wpływów/wypływów w każdym węźle równa 0
-        """
-        #matrix = np.zeros((n * n, n * n))
+    data, row, col = [], [], []
 
-        for node in reg_nodes:
-            matrix[node][node] = 0
-            for ind in G.neighbors(node):
-                d = G[node][ind]["d"]
-                l = G[node][ind]['length']
-                matrix[node][ind] = c1 * d ** 4 / l
-                matrix[node][node] -= c1 * d ** 4 / l
+    diag = np.zeros(n * n)
+    for n1, n2, d, l in reg_reg_edges:
+        res = c1 * d ** 4 / l
+        data.append(res)
+        row.append(n1)
+        col.append(n2)
+        data.append(res)
+        row.append(n2)
+        col.append(n1)
+        diag[n1] -= res
+        diag[n2] -= res
+    for n1, n2, d, l in reg_something_edges:
+        res = c1 * d ** 4 / l
+        data.append(res)
+        row.append(n1)
+        col.append(n2)
+        diag[n1] -= res
+    for node, datum in enumerate(diag):
+        if datum != 0:
+            row.append(node)
+            col.append(node)
+            data.append(datum)
+    for node in out_nodes:
+        row.append(node)
+        col.append(node)
+        data.append(1)
 
-        for node in out_nodes:
-            matrix[node][node] = 1
+    insert = defaultdict(float)
+    for n1, n2, d, l in in_edges:
+        insert[n2] += c1 * d ** 4 / l
+    sum_insert = sum(insert.values())
 
-        insert = [0]*len(G)
-        for n1, n2, d, l in in_edges:
-            d = G[n1][n2]['d']
-            l = G[n1][n2]['length']
-            insert[n2] += c1*d**4 / l
+    for node in in_nodes:
+        data.append(-sum_insert)
+        row.append(node)
+        col.append(node)
 
-        sum_insert = np.sum(insert)
-        for node in in_nodes:
-            matrix[node][:] = insert
-            matrix[node][node] -= sum_insert
+        for ins_node, ins in insert.items():
+            data.append(ins)
+            row.append(node)
+            col.append(ins_node)
 
-        return matrix
-    def update_sparse_matrix(G):
-        data = []
-
-
-        diag = np.zeros(nkw)
-        for n1, n2, d, l in reg_reg_edges:
-            res = c1 * d ** 4 / l
-            data.append((res, n1 * nkw + n2))
-            data.append((res, n2 * nkw + n1))
-            diag[n1] -= res
-            diag[n2] -= res
-
-        insert = defaultdict(float)
-
-        for n1, n2, d, l in reg_something_edges:
-            res = c1 * d ** 4 / l
-            data.append((res, n1 * nkw + n2))
-            diag[n1] -= res
-            
-
-
-
-        for node, datum in enumerate(diag):
-            if datum != 0:
-                data.append((datum, node * nkw + node))
-
-        for node in out_nodes:
-            data.append((1, node * nkw + node))
-
-
-        for n1, n2, d, l in in_edges:
-            insert[n2] += c1 * d ** 4 / l
-
-        sum_insert = sum(insert.values())
-
-        for node in in_nodes:
-            data.append((-sum_insert, node * nkw + node))
-
-            for ins_node, ins in insert.items():
-                data.append((ins, node * nkw + ins_node))                
-
-        data.sort(key=lambda elem: elem[1])
-
-        global indices, indptr
-        return spr.csr_matrix(([datum[0] for datum in data], indices, indptr), shape=(nkw, nkw))
-
-
-    if SPARSE == 1: return update_sparse_matrix(G)
-    elif SPARSE == 0: return update_nonsparse_matrix(G)
+    return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
 
 def equidistant_geometry(R, xrange, yrange, how_many):
     id_center = De.find_center_node(G, n, xrange=xrange, yrange=yrange)
@@ -281,19 +192,89 @@ def equidistant_geometry(R, xrange, yrange, how_many):
     return in_nodes, out_nodes
 
 
+#=================  FUNKCJE TLEN  ======================================================================================
+
+
+def create_ox_vector(G, n):
+    global in_nodes_ox, out_nodes_ox
+    oxresult = np.zeros(nkw)
+    for node in in_nodes_ox:
+        oxresult[node] = 1
+    for node in out_nodes_ox:
+        oxresult[node] = 1
+    return oxresult
+
+def update_matrix_ox(G):
+
+    matrix = np.zeros((n * n, n * n))
+
+    for node in reg_nodes:
+        matrix[node][node] = k
+        for ind in G.neighbors(node):
+            d = G[node][ind]["d"]
+            l = G[node][ind]['length']
+            if d > dth:
+                matrix[node][node] = 1
+                oxresult[node] = 1
+                oxresult[ind] = 1
+            else:
+                matrix[node][ind] = D / l
+                matrix[node][node] -= D / l
+
+    for node in out_nodes:
+        matrix[node][node] = 1
+
+    for node in in_nodes:
+        matrix[node][node] = 1
+
+    return matrix
+
+def update_sparse_matrix_ox(G):
+
+    data, row, col = [], [], []
+
+    for node in reg_nodes:
+        this_node = k
+        for ind in G.neighbors(node):
+            d = G[node][ind]["d"]
+            l = G[node][ind]['length']
+            if d > dth:
+                this_node = 1
+                oxresult[node] = 1
+                oxresult[ind] = 1
+            else:
+                data.append(D/l)
+                row.append(node)
+                col.append(ind)
+
+                this_node -= D/l
+
+        data.append(this_node)
+        row.append(node)
+        col.append(node)
+
+    for node in in_nodes + out_nodes:
+        data.append(1)
+        row.append(node)
+        col.append(node)
+
+    return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
+
+
+
 #=================  GRAF I GEOMETRIA  ==================================================================================
 
 #G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
 G = Tr.Build_triangular_net(n, length_wiggle_param=length_wiggle_param, diameter_wiggle_param=diameter_wiggle_param)
 
-
-in_nodes, out_nodes = equidistant_geometry(R = 50, xrange = n*np.sqrt(3)/2, yrange = n, how_many = 12)
+#in_nodes, out_nodes = equidistant_geometry(R = n//2.5, xrange = n, yrange = n, how_many = 100)
 
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5)
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='rect')
-in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
+in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='rect')
+#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
 
+in_nodes_ox, out_nodes_ox, reg_nodes_ox = in_nodes.copy(), out_nodes.copy(), reg_nodes.copy()
 
 reg_reg_edges, reg_something_edges = [],  []
 for n1, n2 in G.edges():
@@ -309,14 +290,24 @@ for n1, n2 in G.edges():
 #=================  PROGRAM WŁAŚCIWY  ==================================================================================
 
 presult = create_pressure_flow_vector(G, n, qin, presout)
-matrix = create_matrix(G, SPARSE=SPARSE)
-if SPARSE: indices, indptr = matrix.indices, matrix.indptr
+
+oxresult = create_ox_vector(G, n)
+
+#matrix_ox = np.zeros((n * n, n * n))
+
 
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
-    matrix = update_matrix(G, matrix, SPARSE)
+    matrix = update_matrix()
+
+    matrix_ox = update_sparse_matrix_ox(G)
+
     pnow = solve_equation_for_pressure(matrix, presult)
-    if i%((iters-1)//5) == 0:
+
+    oxnow = sprlin.spsolve(matrix_ox, oxresult)
+
+
+    if i%save_every == 0:
         Q_in = 0
         Q_out = 0
         for n1, n2, d, l in reg_reg_edges:
@@ -335,6 +326,7 @@ for i in range(iters):
                 Q_out+=q
         
         print('Q_in =', Q_in, 'Q_out =', Q_out)
-       
-        Dr.drawq(G, n, f'd{i//((iters-1)//5):04d}.png', in_nodes=in_nodes, out_nodes=out_nodes)
+
+        #nx.draw_networkx_nodes(G, pos, node_size=100 * oxresult, node_color='b')
+        Dr.drawq(G, n, f'{i//save_every:04d}.png', in_nodes=in_nodes, out_nodes=out_nodes, oxresult = oxresult)
     reg_reg_edges, reg_something_edges, in_edges=update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
