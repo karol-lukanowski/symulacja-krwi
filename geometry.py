@@ -157,3 +157,53 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
                 in_edges.append((node, neigh, d, l))
 
     return in_nodes, out_nodes, reg_nodes, in_edges
+
+
+"""
+def equidistant_geometry(R, xrange, yrange, how_many):
+    id_center = De.find_center_node(G, n, xrange=xrange, yrange=yrange)
+
+    def r_squared(node):
+        # x0, y0 = G.nodes[n*n//2]["pos"]
+        x0, y0 = G.nodes[id_center]['pos']
+        x, y = G.nodes[node]['pos']
+        r_sqr = (x - x0) ** 2 + (y - y0) ** 2
+        return r_sqr
+
+    boundary_nodes = []
+    for (n1, n2) in G.edges():
+        r1, r2 = r_squared(n1), r_squared(n2)
+        if r1 > r2:
+            n1, n2 = n2, n1
+            r1, r2 = r2, r1
+
+        n_b = n2
+
+        if r2 >= R ** 2 and r1 <= R ** 2:
+            # x, y = G.nodes[n_b]['pos'][0] - G.nodes[n**2 // 2]['pos'][0], G.nodes[n_b]['pos'][1] - G.nodes[n**2 // 2]['pos'][1]
+            x, y = G.nodes[n_b]['pos'][0] - G.nodes[id_center]['pos'][0], G.nodes[n_b]['pos'][1] - \
+                   G.nodes[id_center]['pos'][1]
+
+            if x == 0: x = 0.000001
+            if y == 0: y = 0.000001
+
+            if (x >= 0 and y >= 0):
+                fi = np.arctan(y / x)
+            elif (x < 0 and y >= 0):
+                fi = np.pi / 2 + np.arctan(-x / y)
+            elif (x < 0 and y < 0):
+                fi = np.pi + np.arctan(y / x)
+            else:
+                fi = (3 / 2) * np.pi + np.arctan(x / -y)
+            boundary_nodes.append([n_b, fi])
+    boundary_nodes.sort(key=lambda node: node[1])
+
+    boundary_nodes, fis = zip(*boundary_nodes)
+
+    num_of_out_nodes = how_many
+    out_indexes = np.round(np.linspace(0, len(boundary_nodes) - 1, num_of_out_nodes + 1)).astype(int)
+    out_nodes = list(np.array(boundary_nodes)[out_indexes[:-1]])
+    in_nodes = [id_center]
+
+    return in_nodes, out_nodes
+"""
