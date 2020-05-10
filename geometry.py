@@ -102,24 +102,30 @@ def find_out_nodes(G):
 def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
     def rect_default_nodes():
         in_nodes = list(range(n))
+        reg_nodes = list(range(n,n * (n - 1)))
         out_nodes = list(range(n * (n - 1), n * n))
-        return in_nodes, out_nodes
+        return in_nodes, out_nodes, reg_nodes
     def cyl_default_nodes():
         id_center = n * n // 2
         in_nodes = [id_center]
         x0, y0 = G.nodes[id_center]["pos"]
         out_nodes = []
+        reg_nodes = []
         for node in G.nodes:
             pos = G.nodes[node]["pos"]
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
             if r > R and r < R + 1:
                 out_nodes.append(node)
-        return in_nodes, out_nodes
+            elif r < R+1:
+                reg_nodes.append(node)
+
+        return in_nodes, out_nodes, reg_nodes
     def don_default_nodes():
         id_center = n * n // 2
         x0, y0 = G.nodes[id_center]["pos"]
         in_nodes = []
         out_nodes = []
+        reg_nodes = []
         for node in G.nodes:
             pos = G.nodes[node]["pos"]
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
@@ -127,7 +133,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
                 out_nodes.append(node)
             elif r > R_s and r < R_s + 1:
                 in_nodes.append(node)
-        return in_nodes, out_nodes
+            elif r < R+1:
+                reg_nodes.append(node)
+        return in_nodes, out_nodes, reg_nodes
 
     def don_default_nodes2():
         in_nodes = find_circle_nodes(G, n, R_s)[2]
@@ -136,19 +144,20 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
 
     in_nodes, out_nodes, reg_nodes, in_edges = [], [], [], []
     if geo == 'rect':
-        in_nodes, out_nodes = rect_default_nodes()
+        in_nodes, out_nodes, reg_nodes = rect_default_nodes()
     elif geo == 'cylindrical':
-        in_nodes, out_nodes = cyl_default_nodes()
+        in_nodes, out_nodes, reg_nodes = cyl_default_nodes()
     elif geo == 'donut':
-        in_nodes, out_nodes = don_default_nodes()
+        in_nodes, out_nodes, reg_nodes = don_default_nodes()
     elif geo == 'own':
         in_nodes, out_nodes = kwargs['in_nodes'], kwargs['out_nodes']
+        reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
     else:
         print('Wrong geometry specified')
         return 0
 
 
-    reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
+#    reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
     for node in in_nodes:
         for neigh in G.neighbors(node):
             if neigh not in in_nodes:

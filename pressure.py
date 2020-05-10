@@ -79,21 +79,21 @@ def d_update(F):
     return result * dt
 
 def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
-
-
-    reg_reg_edges2, reg_something_edges2, in_edges2 = [], [], []
-    for n1, n2, d, l in reg_reg_edges:
+ 
+    for i,e in enumerate(reg_reg_edges):
+        n1, n2, d, l = e
         F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        dnew = d + d_update(F)
-        reg_reg_edges2.append((n1, n2, dnew, l))
-
-    for n1, n2, d, l in reg_something_edges:
+        d += d_update(F)
+        reg_reg_edges[i] = (n1, n2, d, l)
+    for i,e in enumerate(reg_something_edges):
+        n1, n2, d, l = e
         F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        dnew = d + d_update(F)
-        reg_something_edges2.append((n1, n2, dnew, l))
-    for n1, n2, d, l in in_edges:
+        d += d_update(F)
+        reg_something_edges[i] = (n1, n2, d, l)
+    for i,e in enumerate(in_edges):
+        n1, n2, d, l = e
         F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        dnew = d + d_update(F)
-        in_edges2.append((n1, n2, dnew, l))
+        d += d_update(F)
+        in_edges[i] = (n1, n2, d, l)
 
-    return reg_reg_edges2, reg_something_edges2, in_edges2
+    return reg_reg_edges, reg_something_edges, in_edges
