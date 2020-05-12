@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import networkx as nx
+import delaunay as De
 
 # Funkcje do znajdowania wezlow na okregu
 def find_circle_nodes(G, n, R):
@@ -168,8 +169,8 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, **kwargs):
     return in_nodes, out_nodes, reg_nodes, in_edges
 
 
-"""
-def equidistant_geometry(R, xrange, yrange, how_many):
+
+def equidistant_geometry(G, n, R, xrange, yrange, how_many):
     id_center = De.find_center_node(G, n, xrange=xrange, yrange=yrange)
 
     def r_squared(node):
@@ -215,4 +216,3 @@ def equidistant_geometry(R, xrange, yrange, how_many):
     in_nodes = [id_center]
 
     return in_nodes, out_nodes
-"""
