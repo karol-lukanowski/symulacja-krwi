@@ -1,7 +1,7 @@
 import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
-from config import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, D, k, dth, in_nodes, out_nodes
+from config import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, D, k, dth, in_nodes_ox, out_nodes_ox
 
 
 
@@ -10,24 +10,36 @@ def solve_equation(matrix, oxresult):
 
 def create_vector(G):
     oxresult = np.zeros(nkw)
-    for node in in_nodes:
+    for node in in_nodes_ox:
         oxresult[node] = 1
-    for node in out_nodes:
-        oxresult[node] = 0
+#    for node in out_nodes_ox:
+#        oxresult[node] = 1
     return oxresult
 
 def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
 
     data, row, col = [], [], []
 
-    diag = np.ones(nkw) * k
+    diag = np.ones(nkw) * (-k)
     for n1, n2, d, l in reg_reg_edges:
-        if d > dth and oxresult[n2] == 1:
-            oxresult[n1] = 1
-            diag[n1] = 1
-        elif d > dth and oxresult[n1] == 1:
-            oxresult[n2] = 1
+        if oxresult[n1] == 1:
+            if oxresult[n2] == 1:
+                diag[n1] = 1
+                diag[n2] = 1
+            else:
+                diag[n1] = 1
+                res = D / l
+                data.append(res)
+                row.append(n2)
+                col.append(n1)
+                diag[n2] -= res
+        elif oxresult[n2] == 1:
             diag[n2] = 1
+            res = D / l
+            data.append(res)
+            row.append(n1)
+            col.append(n2)
+            diag[n1] -= res
         else:
             res = D / l
             data.append(res)
@@ -40,12 +52,24 @@ def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
             diag[n2] -= res
             
     for n1, n2, d, l in reg_something_edges:
-        if d > dth and oxresult[n2] == 1:
-            oxresult[n1] = 1
-            diag[n1] = 1
-        elif d > dth and oxresult[n1] == 1:
-            oxresult[n2] = 1
+        if oxresult[n1] == 1:
+            if oxresult[n2] == 1:
+                diag[n1] = 1
+                diag[n2] = 1
+            else:
+                diag[n1] = 1
+                res = D / l
+                data.append(res)
+                row.append(n2)
+                col.append(n1)
+                diag[n2] -= res
+        elif oxresult[n2] == 1:
             diag[n2] = 1
+            res = D / l
+            data.append(res)
+            row.append(n1)
+            col.append(n2)
+            diag[n1] -= res
         else:
             res = D / l
             data.append(res)
@@ -56,16 +80,16 @@ def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
             col.append(n1)
             diag[n1] -= res
             diag[n2] -= res
+            
+     
+            
     for node, datum in enumerate(diag):
         if datum != 0:
             row.append(node)
             col.append(node)
             data.append(datum)
 
-    return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw)), oxresult
-
-
-
+    return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
@@ -79,16 +103,17 @@ def d_update(F):
         result = z0_ox
     return result * dt_ox
 
+
 def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
-
-
-#    reg_reg_edges2, reg_something_edges2, in_edges2=[], [], []
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])
             d += d_update(F)
         reg_reg_edges[i] = (n1, n2, d, l)
+        if d > dth:
+            oxresult[n1] = 1
+            oxresult[n2] =1
 
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
@@ -96,69 +121,17 @@ def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
             F=F_mult_ox*np.abs(oxnow[n1] - oxnow[n2])
             d += d_update(F)
         reg_something_edges[i] = (n1, n2, d, l)
+        if d > dth:
+            oxresult[n1] = 1
+            oxresult[n2] =1
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])
             d += d_update(F)
         in_edges[i] = (n1, n2, d, l)
+        if d > dth:
+            oxresult[n1] = 1
+            oxresult[n2] =1
 
-    return reg_reg_edges, reg_something_edges, in_edges
-
-"""
-def update_matrix(G, oxresult):
-
-    matrix = np.zeros((n * n, n * n))
-
-    for node in reg_nodes:
-        matrix[node][node] = k
-        for ind in G.neighbors(node):
-            d = G[node][ind]["d"]
-            l = G[node][ind]['length']
-            if d > dth:
-                matrix[node][node] = 1
-                oxresult[node] = 1
-                oxresult[ind] = 1
-            else:
-                matrix[node][ind] = D / l
-                matrix[node][node] -= D / l
-
-    for node in out_nodes:
-        matrix[node][node] = 1
-
-    for node in in_nodes:
-        matrix[node][node] = 1
-
-    return matrix, oxresult
-
-def update_matrix(G, oxresult):
-
-    data, row, col = [], [], []
-
-    for node in reg_nodes:
-        this_node = k
-        for ind in G.neighbors(node):
-            d = G[node][ind]["d"]
-            l = G[node][ind]['length']
-            if d > dth and oxresult[ind] == 1:
-                this_node = 1
-                oxresult[node] = 1
-#                oxresult[ind] = 1
-            else:
-                data.append(D/l)
-                row.append(node)
-                col.append(ind)
-
-                this_node -= D/l
-
-        data.append(this_node)
-        row.append(node)
-        col.append(node)
-
-    for node in in_nodes + out_nodes:
-        data.append(1)
-        row.append(node)
-        col.append(node)
-
-    return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw)), oxresult
-"""
+    return reg_reg_edges, reg_something_edges, in_edges, oxresult

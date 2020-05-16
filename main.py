@@ -3,8 +3,8 @@ import numpy as np
 import draw_net as Dr
 import pressure as Pr
 import oxygen as Ox
-from config import G, in_nodes, out_nodes, iters, in_edges, c1, save_every
-
+from config import n, G, in_nodes, out_nodes, iters, in_edges, c1, save_every
+import matplotlib.pyplot as plt
 
 reg_reg_edges, reg_something_edges = [],  []
 for n1, n2 in G.edges():
@@ -25,7 +25,7 @@ oxresult = Ox.create_vector(G)
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
     pmatrix = Pr.update_matrix(reg_reg_edges, reg_something_edges, in_edges)
-    oxmatrix, oxresult = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges)
+    oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges)
     pnow = Pr.solve_equation(pmatrix, presult)
     oxnow = Ox.solve_equation(oxmatrix, oxresult)        
     
@@ -52,10 +52,21 @@ for i in range(iters):
         
         
         Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult)
-        Dr.drawd(name = f'd{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult)
-        Dr.drawq(name = f'q{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult)
-            
+#        Dr.drawd(name = f'd{i//save_every:04d}.png', oxresult = oxresult)
+#        Dr.drawq(name = f'q{i//save_every:04d}.png', oxresult = oxresult)
+        a=0
+        nowtab = []
+        ntab = []
+        for index in range(n**2):
+            if index%n==0:
+                nowtab.append(oxnow[index])
+                ntab.append(a)
+                a+=1
+        plt.plot(ntab, nowtab)
+        plt.show()
+
+
     reg_reg_edges, reg_something_edges, in_edges=Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
-    reg_reg_edges, reg_something_edges, in_edges=Ox.update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
+    reg_reg_edges, reg_something_edges, in_edges, oxresult=Ox.update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
 
 

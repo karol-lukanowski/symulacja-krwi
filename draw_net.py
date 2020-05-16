@@ -16,7 +16,7 @@ import oxygen as Ox
 
 
 
-def drawq(name, normalize=True, oxnow = [], oxresult = []):
+def drawq(name, normalize=True, oxresult = []):
     """
     rysowanie przepływów
     """
@@ -58,7 +58,7 @@ def drawq(name, normalize=True, oxnow = [], oxresult = []):
     oxresult2 = oxresult-0.5
     oxresult = list(oxresult)
 
-    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
+#    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
 
     plt.axis('equal')
     plt.savefig(name)
@@ -67,7 +67,7 @@ def drawq(name, normalize=True, oxnow = [], oxresult = []):
 
 
 
-def drawd(name, normalize=True, oxnow = [], oxresult = []):
+def drawd(name, normalize=True, oxresult = []):
     """
     rysowanie przepływów
     """
@@ -109,7 +109,7 @@ def drawd(name, normalize=True, oxnow = [], oxresult = []):
     oxresult2 = oxresult-0.5
     oxresult = list(oxresult)
 
-    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
+#    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
 
     plt.axis('equal')
     plt.savefig(name)
@@ -157,6 +157,8 @@ def drawhist(name, oxnow=[], oxresult=[]):
         Fhist[int(6*q/qmax)].append(F)
         shearhist[int(6*q/qmax)].append(shear)
         shearhistox[int(6*q/qmax)].append(shearox)
+    colortab = []
+
     
     color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k',]
     for edge in G.edges(data="q"):
@@ -185,11 +187,12 @@ def drawhist(name, oxnow=[], oxresult=[]):
     for node in out_nodes:
         x_out.append(pos[node][0])
         y_out.append(pos[node][1])
-            
-    oxresult = np.abs(np.array(oxresult))
-    oxresult=oxresult.astype(int)
-    oxresult2 = oxresult-0.5
-    oxresult = list(oxresult)
+    
+    oxresult2=oxresult.copy()        
+    oxresult2 = np.abs(np.array(oxresult2))
+    oxresult2 = oxresult2.astype(int)
+    oxresult3 = oxresult2-0.5
+    oxresult2 = list(oxresult2)
     
     
     plt.figure(figsize=(20, 20))
@@ -199,7 +202,7 @@ def drawhist(name, oxnow=[], oxresult=[]):
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
     nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=qdrawconst * np.array(qs) / qmax)
-    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
+    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult3, node_color=colortab, cmap = 'bwr')
     plt.axis('equal')
     plt.subplot(spec[4]).set_title('Diameter')
     cindex=0
@@ -217,13 +220,14 @@ def drawhist(name, oxnow=[], oxresult=[]):
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log")
-    plt.subplot(spec[6]).set_title('Oxygen shear')
+    plt.subplot(spec[6]).set_title('Oxygen')
     cindex=0
-    plt.xlim((0, 1.1*shearmaxox))
-    for hist in shearhistox:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
+#    plt.xlim((0, 1.1*shearmaxox))
+#    for hist in shearhistox:
+#        if len(hist)>1:
+#            plt.hist(hist, bins=50, color=color[cindex])
+#        cindex+=1
+    plt.hist(oxnow, bins=50)
     plt.yscale("log")        
     plt.subplot(spec[7]).set_title('Shear')
     cindex=0

@@ -79,7 +79,6 @@ def d_update(F):
     return result * dt
 
 def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
- 
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
         F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l

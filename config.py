@@ -5,9 +5,9 @@ import delaunay as De
 from geometry import set_geometry
 
 
-n = 101 # rozmiar siatki
+n = 50 # rozmiar siatki
 nkw = n ** 2
-iters = 501  # liczba iteracji
+iters = 2001  # liczba iteracji
 save_every = 100
 
 
@@ -27,19 +27,19 @@ F1 = 1
 z0 = 0
 z1 = 1
 F_mult = 10000
-dt = 0.3
+dt = 0.1
 
 
 D = 1 # współczynnik dyfuzji
 k = 0.01 # stała reakcji
-dth = 8 # graniczna grubosć
+dth = 12 # graniczna grubosć
 
 F0_ox = 0.1
 F1_ox = 1
 z0_ox = 0
 z1_ox = 1
-F_mult_ox = 10
-dt_ox = 0.05
+F_mult_ox = 18
+dt_ox = 0.02
 
 
 qdrawconst = 5
@@ -55,4 +55,7 @@ G = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diamet
 in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo = 'rect')
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
 
-
+in_nodes_ox = [0, 10, 20, 30, 40]
+out_nodes_ox = [2450, 2460, 2470, 2480, 2490]
+#in_nodes_ox = in_nodes
+#out_nodes_ox = out_nodes
