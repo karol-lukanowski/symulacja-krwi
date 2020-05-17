@@ -5,14 +5,14 @@ import delaunay as De
 from geometry import set_geometry
 
 
-n = 50 # rozmiar siatki
+n = 101 # rozmiar siatki
 nkw = n ** 2
 iters = 2001  # liczba iteracji
 save_every = 100
 
 
-length_wiggle_param = 0.5
-diameter_wiggle_param = 0.3
+length_wiggle_param = 1
+diameter_wiggle_param = 3
 
 
 qin = 10  # ilosć wpływającej krwi
@@ -31,15 +31,16 @@ dt = 0.1
 
 
 D = 1 # współczynnik dyfuzji
-k = 0.01 # stała reakcji
-dth = 12 # graniczna grubosć
+k = 0.1 # stała reakcji
+dth = 15 # graniczna grubosć
+Dv = 1 # współczynnik dyfuzji VEGF
 
 F0_ox = 0.1
 F1_ox = 1
 z0_ox = 0
 z1_ox = 1
-F_mult_ox = 18
-dt_ox = 0.02
+F_mult_ox = 0.01
+dt_ox = 3
 
 
 qdrawconst = 5
@@ -55,7 +56,7 @@ G = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diamet
 in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo = 'rect')
 #in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
 
-in_nodes_ox = [0, 10, 20, 30, 40]
-out_nodes_ox = [2450, 2460, 2470, 2480, 2490]
-#in_nodes_ox = in_nodes
-#out_nodes_ox = out_nodes
+#in_nodes_ox = [0, 10, 20, 30, 40]
+#out_nodes_ox = [2450, 2460, 2470, 2480, 2490]
+in_nodes_ox = in_nodes
+out_nodes_ox = out_nodes

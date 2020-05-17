@@ -9,7 +9,7 @@ from config import nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes,
 def solve_equation(matrix, presult):
     return sprlin.spsolve(matrix, presult)
 
-def create_vector(G):
+def create_vector():
     global in_nodes, out_nodes
     presult = np.zeros(nkw)
     for node in in_nodes:

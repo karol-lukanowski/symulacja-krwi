@@ -11,6 +11,7 @@ from matplotlib import gridspec
 from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2
 import pressure as Pr
 import oxygen as Ox
+import vegf as Ve
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
@@ -119,7 +120,7 @@ def drawd(name, normalize=True, oxresult = []):
 
 
 
-def drawhist(name, oxnow=[], oxresult=[]):
+def drawhist(name, oxnow=[], oxresult=[], vnow = []):
     """
     rysowanie przepływów
     """
@@ -148,8 +149,8 @@ def drawhist(name, oxnow=[], oxresult=[]):
             shearmax=shear
         if F>Fmax:
             Fmax=F
-        F_ox=F_mult_ox*np.abs(oxnow[n1] - oxnow[n2])
-        shearox=Ox.d_update(F_ox)
+        F_ox=F_mult_ox*np.abs(vnow[n1] - vnow[n2])
+        shearox=Ve.d_update(F_ox)
         if shearox>shearmaxox:
             shearmaxox=shearox
         qhist[int(6*q/qmax)].append(q)
@@ -187,9 +188,14 @@ def drawhist(name, oxnow=[], oxresult=[]):
     for node in out_nodes:
         x_out.append(pos[node][0])
         y_out.append(pos[node][1])
+        
+    x_ox, y_ox = [], []
+    for i, e in enumerate(oxresult):
+        if e == 1:
+            x_ox.append(pos[i][0])
+            y_ox.append(pos[i][1])
     
     oxresult2=oxresult.copy()        
-    oxresult2 = np.abs(np.array(oxresult2))
     oxresult2 = oxresult2.astype(int)
     oxresult3 = oxresult2-0.5
     oxresult2 = list(oxresult2)
@@ -201,8 +207,9 @@ def drawhist(name, oxnow=[], oxresult=[]):
     plt.subplot(spec.new_subplotspec((0, 0), colspan=4))
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
+    plt.scatter(x_ox, y_ox, s=60, facecolors='pink', edgecolors='black')
     nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=qdrawconst * np.array(qs) / qmax)
-    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult3, node_color=colortab, cmap = 'bwr')
+#    nx.draw_networkx_nodes(G, pos, node_size=1000 * oxresult2, node_color=oxresult2, cmap = 'bwr')
     plt.axis('equal')
     plt.subplot(spec[4]).set_title('Diameter')
     cindex=0
@@ -227,12 +234,12 @@ def drawhist(name, oxnow=[], oxresult=[]):
 #        if len(hist)>1:
 #            plt.hist(hist, bins=50, color=color[cindex])
 #        cindex+=1
-    plt.hist(oxnow, bins=50)
+    plt.hist(vnow, bins=50)
     plt.yscale("log")        
     plt.subplot(spec[7]).set_title('Shear')
     cindex=0
-    plt.xlim((0,1.1*shearmax))
-    for hist in shearhist:
+    plt.xlim((0,1.1*shearmaxox))
+    for hist in shearhistox:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1

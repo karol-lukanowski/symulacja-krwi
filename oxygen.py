@@ -8,7 +8,7 @@ from config import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, D, k, dth,
 def solve_equation(matrix, oxresult):
     return sprlin.spsolve(matrix, oxresult)
 
-def create_vector(G):
+def create_vector():
     oxresult = np.zeros(nkw)
     for node in in_nodes_ox:
         oxresult[node] = 1
@@ -110,28 +110,31 @@ def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])
             d += d_update(F)
+            if d > dth:
+                oxresult[n1] = 1
+                oxresult[n2] =1
         reg_reg_edges[i] = (n1, n2, d, l)
-        if d > dth:
-            oxresult[n1] = 1
-            oxresult[n2] =1
+
 
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F=F_mult_ox*np.abs(oxnow[n1] - oxnow[n2])
             d += d_update(F)
+            if d > dth:
+                oxresult[n1] = 1
+                oxresult[n2] =1            
         reg_something_edges[i] = (n1, n2, d, l)
-        if d > dth:
-            oxresult[n1] = 1
-            oxresult[n2] =1
+
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])
             d += d_update(F)
+            if d > dth:
+                oxresult[n1] = 1
+                oxresult[n2] =1
         in_edges[i] = (n1, n2, d, l)
-        if d > dth:
-            oxresult[n1] = 1
-            oxresult[n2] =1
+
 
     return reg_reg_edges, reg_something_edges, in_edges, oxresult

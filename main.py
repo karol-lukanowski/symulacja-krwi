@@ -3,6 +3,7 @@ import numpy as np
 import draw_net as Dr
 import pressure as Pr
 import oxygen as Ox
+import vegf as Ve
 from config import n, G, in_nodes, out_nodes, iters, in_edges, c1, save_every
 import matplotlib.pyplot as plt
 
@@ -17,8 +18,8 @@ for n1, n2 in G.edges():
     elif (n2 not in in_nodes and n2 not in out_nodes):
         reg_something_edges.append((n2, n1, d, l ))
 
-presult = Pr.create_vector(G)
-oxresult = Ox.create_vector(G)
+presult = Pr.create_vector()
+oxresult = Ox.create_vector()
 
 
 
@@ -28,7 +29,9 @@ for i in range(iters):
     oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges)
     pnow = Pr.solve_equation(pmatrix, presult)
     oxnow = Ox.solve_equation(oxmatrix, oxresult)        
-    
+    vresult = Ve.create_vector(oxnow, oxresult)
+    vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges)
+    vnow = Ve.solve_equation(vmatrix, vresult)
     if i%save_every == 0:
         Q_in = 0
         Q_out = 0
@@ -51,9 +54,9 @@ for i in range(iters):
         print('Q_in =', Q_in, 'Q_out =', Q_out)
         
         
-        Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult)
-#        Dr.drawd(name = f'd{i//save_every:04d}.png', oxresult = oxresult)
-#        Dr.drawq(name = f'q{i//save_every:04d}.png', oxresult = oxresult)
+        Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = vnow)
+        Dr.drawd(name = f'd{i//save_every:04d}.png', oxresult = oxresult)
+        Dr.drawq(name = f'q{i//save_every:04d}.png', oxresult = oxresult)
         a=0
         nowtab = []
         ntab = []
@@ -67,6 +70,6 @@ for i in range(iters):
 
 
     reg_reg_edges, reg_something_edges, in_edges=Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
-    reg_reg_edges, reg_something_edges, in_edges, oxresult=Ox.update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
+    reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
 
 
