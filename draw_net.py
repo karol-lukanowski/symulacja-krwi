@@ -4,9 +4,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-
-
-
 from matplotlib import gridspec
 from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2
 import pressure as Pr
@@ -17,7 +14,7 @@ import vegf as Ve
 
 
 
-def drawq(name, normalize=True, oxresult = []):
+def drawq(name, normalize=True, oxdraw=[]):
     """
     rysowanie przepływów
     """
@@ -53,22 +50,18 @@ def drawq(name, normalize=True, oxresult = []):
         y_out.append(pos[node][1])
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
 
-    #### OXYGEN NODES ####
-    oxresult = np.abs(np.array(oxresult))
-    oxresult=oxresult.astype(int)
-    oxresult2 = oxresult-0.5
-    oxresult = list(oxresult)
 
-#    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
+    #### OXYGEN NODES ####
+    nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')
 
     plt.axis('equal')
     plt.savefig(name)
-    plt.close()    
-    
+    plt.close()
 
 
 
-def drawd(name, normalize=True, oxresult = []):
+
+def drawd(name, normalize=True, oxdraw = []):
     """
     rysowanie przepływów
     """
@@ -105,12 +98,7 @@ def drawd(name, normalize=True, oxresult = []):
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
 
     #### OXYGEN NODES ####
-    oxresult = np.abs(np.array(oxresult))
-    oxresult=oxresult.astype(int)
-    oxresult2 = oxresult-0.5
-    oxresult = list(oxresult)
-
-#    nx.draw_networkx_nodes(G, pos, node_size=25 * oxresult2, node_color=oxresult, cmap = 'bwr')
+    nx.draw_networkx_nodes(G, pos, node_size=25 * oxdraw, node_color=oxdraw, cmap='Reds')
 
     plt.axis('equal')
     plt.savefig(name)
