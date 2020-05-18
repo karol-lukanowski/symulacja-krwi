@@ -16,12 +16,12 @@ def create_vector():
 #        oxresult[node] = 1
     return oxresult
 
-def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
 
+def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
     data, row, col = [], [], []
 
     diag = np.ones(nkw) * (-k)
-    for n1, n2, d, l in reg_reg_edges:
+    for n1, n2, d, l in reg_reg_edges+reg_something_edges:
         if oxresult[n1] == 1:
             if oxresult[n2] == 1:
                 diag[n1] = 1
@@ -50,39 +50,7 @@ def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
             col.append(n1)
             diag[n1] -= res
             diag[n2] -= res
-            
-    for n1, n2, d, l in reg_something_edges:
-        if oxresult[n1] == 1:
-            if oxresult[n2] == 1:
-                diag[n1] = 1
-                diag[n2] = 1
-            else:
-                diag[n1] = 1
-                res = D / l
-                data.append(res)
-                row.append(n2)
-                col.append(n1)
-                diag[n2] -= res
-        elif oxresult[n2] == 1:
-            diag[n2] = 1
-            res = D / l
-            data.append(res)
-            row.append(n1)
-            col.append(n2)
-            diag[n1] -= res
-        else:
-            res = D / l
-            data.append(res)
-            row.append(n1)
-            col.append(n2)
-            data.append(res)
-            row.append(n2)
-            col.append(n1)
-            diag[n1] -= res
-            diag[n2] -= res
-            
-     
-            
+
     for node, datum in enumerate(diag):
         if datum != 0:
             row.append(node)
@@ -90,6 +58,7 @@ def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
             data.append(datum)
 
     return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
+
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
