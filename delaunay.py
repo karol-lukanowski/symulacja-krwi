@@ -29,8 +29,12 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         edge = sorted([delTri.vertices[node, 1], delTri.vertices[node, 2]])
         edges.add((int(edge[0]), int(edge[1])))
 
-    # make a graph based on the Delaunay triangulation edges
-    G = nx.Graph(list(edges))
+    edges = list(edges)
+
+    G = nx.Graph()
+    G.add_nodes_from(list(range(n**2)))
+
+    G.add_edges_from(edges)
 
     for node in G.nodes:
         G.nodes[node]["pos"] = points[node]
