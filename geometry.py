@@ -107,10 +107,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         out_nodes = list(range(n * (n - 1), n * n))
         return in_nodes, out_nodes, reg_nodes
     def cyl_default_nodes():
-        if 'del' in kwargs:
+        id_center = n * n // 2
+        if 'del' in kwargs and kwargs['del'] == True:
             id_center = De.find_center_node(G, n, xrange=n, yrange=n)
-        else:
-            id_center = n * n // 2
         in_nodes = [id_center]
         x0, y0 = G.nodes[id_center]["pos"]
         out_nodes = []
@@ -125,10 +124,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
 
         return in_nodes, out_nodes, reg_nodes
     def don_default_nodes():
-        if 'del' in kwargs:
+        id_center = n * n // 2
+        if 'del' in kwargs and kwargs['del'] == True:
             id_center = De.find_center_node(G, n, xrange=n, yrange=n)
-        else:
-            id_center = n * n // 2
         x0, y0 = G.nodes[id_center]["pos"]
         in_nodes = []
         out_nodes = []
