@@ -27,11 +27,12 @@ z0 = 0
 z1 = 1
 F_mult = 10000
 dt = 0.8
-
+#dt = 0.1
 
 D = 1 # współczynnik dyfuzji
 k = 0.1 # stała reakcji
 dth = 8 # graniczna grubosć
+#dth = 15
 Dv = 1 # współczynnik dyfuzji VEGF
 
 F0_ox = 0.1
@@ -43,6 +44,7 @@ dt_ox = 3
 
 
 qdrawconst = 2
+#qdrawconst = 5
 ddrawconst = 3
 
 G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
