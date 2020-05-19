@@ -16,12 +16,12 @@ def create_vector(oxnow, oxresult):
     vresult = - vresult
     return vresult
 
-def update_matrix(vresult, reg_reg_edges, reg_something_edges):
+def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
 
     data, row, col = [], [], []
 
     diag = np.zeros(nkw)
-    for n1, n2, d, l in reg_reg_edges:
+    for n1, n2, d, l in reg_reg_edges+reg_something_edges+other_edges:
         if vresult[n1] == 0:
             if vresult[n2] == 0:
                 diag[n1] = 1
@@ -50,39 +50,7 @@ def update_matrix(vresult, reg_reg_edges, reg_something_edges):
             col.append(n1)
             diag[n1] -= res
             diag[n2] -= res
-            
-    for n1, n2, d, l in reg_something_edges:
-        if vresult[n1] == 0:
-            if vresult[n2] == 0:
-                diag[n1] = 1
-                diag[n2] = 1
-            else:
-                diag[n1] = 1
-                res = Dv / l
-                data.append(res)
-                row.append(n2)
-                col.append(n1)
-                diag[n2] -= res
-        elif vresult[n2] == 0:
-            diag[n2] = 1
-            res = Dv / l
-            data.append(res)
-            row.append(n1)
-            col.append(n2)
-            diag[n1] -= res
-        else:
-            res = Dv / l
-            data.append(res)
-            row.append(n1)
-            col.append(n2)
-            data.append(res)
-            row.append(n2)
-            col.append(n1)
-            diag[n1] -= res
-            diag[n2] -= res
-            
-     
-            
+
     for node, datum in enumerate(diag):
         if datum != 0:
             row.append(node)

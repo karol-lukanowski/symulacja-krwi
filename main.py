@@ -49,9 +49,17 @@ for i in range(iters):
 
     t3 = time.time()
 
-    #vresult = Ve.create_vector(oxnow, oxresult)
-    #vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges)
-    #vnow = Ve.solve_equation(vmatrix, vresult)
+    vresult = Ve.create_vector(oxnow, oxresult)
+
+    t_31 = time.time()
+
+    vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges)
+
+    t_32 = time.time()
+
+    vnow = Ve.solve_equation(vmatrix, vresult)
+
+    t_33 = time.time()
 
     if i%save_every == 0:
         Q_in = 0
@@ -77,9 +85,10 @@ for i in range(iters):
 
         #Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = oxnow)
         #Dr.drawd(name = f'd{i//save_every:04d}.png', oxresult = oxresult)
-        Dr.drawq(name = f'q{i//save_every:04d}.png', oxdraw = oxnow)
-
-
+        Dr.drawq(name = f'q{i//save_every:04d}.png', oxdraw = [])
+        #Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow/np.max(vnow))
+        #Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=oxresult)
+        Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult)
 
         """
         a=0
@@ -96,15 +105,15 @@ for i in range(iters):
 
     reg_reg_edges, reg_something_edges, in_edges=Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
 
+    t_34 = time.time()
 
-
-    #reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
+    reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
 
     t4 = time.time()
 
 
 
-
+    """
     for e in reg_reg_edges+reg_something_edges+in_edges:
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
@@ -113,8 +122,9 @@ for i in range(iters):
                 oxresult[n2] = 1
                 #oxtype[n1] = 1
                 #oxtype[n2] = 1
+    """
 
 
-
-    print(f'update mat press {t1_5-t1}, update mat ox {t2-t1_5}, solve pres eq {t2_5-t2}, solve ox eq {t3-t2_5}, update graph {t4-t3}')
+    print(f'update mat press {t1_5-t1}, update mat ox {t2-t1_5}, solve pres eq {t2_5-t2}, solve ox eq {t3-t2_5}, vresult = {t_31-t3}, vmatrix = {t_32-t_31}, vnow = '
+          f'{t_33-t_32}, update graph {t_34-t_33}, update graph ox {t4-t_34}')
 
