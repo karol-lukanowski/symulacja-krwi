@@ -17,11 +17,11 @@ def create_vector():
     return oxresult
 
 
-def update_matrix(oxresult, reg_reg_edges, reg_something_edges):
+def update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges):
     data, row, col = [], [], []
 
     diag = np.ones(nkw) * (-k)
-    for n1, n2, d, l in reg_reg_edges+reg_something_edges:
+    for n1, n2, d, l in reg_reg_edges+reg_something_edges+other_edges:
         if oxresult[n1] == 1:
             if oxresult[n2] == 1:
                 diag[n1] = 1

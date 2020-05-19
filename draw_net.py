@@ -54,6 +54,9 @@ def drawq(name, normalize=True, oxdraw=[]):
     #### OXYGEN NODES ####
     nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')
 
+    #nx.draw(G, pos, with_labels=True)
+    #plt.show()
+
     plt.axis('equal')
     plt.savefig(name)
     plt.close()
@@ -99,6 +102,7 @@ def drawd(name, normalize=True, oxdraw = []):
 
     #### OXYGEN NODES ####
     nx.draw_networkx_nodes(G, pos, node_size=25 * oxdraw, node_color=oxdraw, cmap='Reds')
+
 
     plt.axis('equal')
     plt.savefig(name)
