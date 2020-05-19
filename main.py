@@ -31,35 +31,15 @@ oxresult = Ox.create_vector()
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
 
-    t1 = time.time()
-
     pmatrix = Pr.update_matrix(reg_reg_edges, reg_something_edges, in_edges)
-
-    t1_5 = time.time()
-
     oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges)
 
-    t2 = time.time()
-
     pnow = Pr.solve_equation(pmatrix, presult)
-
-    t2_5 = time.time()
-
     oxnow = Ox.solve_equation(oxmatrix, oxresult)
 
-    t3 = time.time()
-
     vresult = Ve.create_vector(oxnow, oxresult)
-
-    t_31 = time.time()
-
     vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges)
-
-    t_32 = time.time()
-
     vnow = Ve.solve_equation(vmatrix, vresult)
-
-    t_33 = time.time()
 
     if i%save_every == 0:
         Q_in = 0
@@ -104,16 +84,10 @@ for i in range(iters):
         """
 
     reg_reg_edges, reg_something_edges, in_edges=Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
-
-    t_34 = time.time()
-
     reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
 
-    t4 = time.time()
-
-
-
     """
+    # update oxresult gdy vegf jest wylaczony
     for e in reg_reg_edges+reg_something_edges+in_edges:
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
@@ -123,8 +97,3 @@ for i in range(iters):
                 #oxtype[n1] = 1
                 #oxtype[n2] = 1
     """
-
-
-    print(f'update mat press {t1_5-t1}, update mat ox {t2-t1_5}, solve pres eq {t2_5-t2}, solve ox eq {t3-t2_5}, vresult = {t_31-t3}, vmatrix = {t_32-t_31}, vnow = '
-          f'{t_33-t_32}, update graph {t_34-t_33}, update graph ox {t4-t_34}')
-
