@@ -63,12 +63,14 @@ for i in range(iters):
         print('Q_in =', Q_in, 'Q_out =', Q_out)
 
 
-        #Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = oxnow)
+        #Dr.drawhist(name = f'hist{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = vnow)
         #Dr.drawd(name = f'd{i//save_every:04d}.png', oxresult = oxresult)
         Dr.drawq(name = f'q{i//save_every:04d}.png', oxdraw = [])
         #Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow/np.max(vnow))
         #Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=oxresult)
         Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult)
+        Dr.drawblood(name=f'q_blood{i // save_every:04d}.png', oxresult=oxresult, data='q')
+        Dr.drawblood(name=f'd_blood{i // save_every:04d}.png', oxresult=oxresult, data='d')
 
         """
         a=0
