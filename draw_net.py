@@ -238,5 +238,49 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
     plt.yscale("log") 
     plt.savefig(dirname + "/" + name)
     plt.close()
-        
-    
+
+
+def drawblood(name, oxresult, data='q'):
+    """
+    rysowanie krwi, data to q albo d
+    """
+    plt.figure(figsize=(20, 20))
+    pos = nx.get_node_attributes(G, 'pos')
+
+    qmax = max([edge[2] for edge in G.edges(data=data)])
+
+    edges = []
+    qs = []
+    for edge in G.edges(data=data):
+        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+            x, y, q = edge
+            edges.append((x, y))
+            qs.append(q)
+
+    #draw only those between oxygen nodes:
+    for i, edge in enumerate(edges):
+        n1, n2 = edge
+        if (oxresult[n1] != 1 or oxresult[n2] != 1):
+            qs[i] = 0
+
+    nx.draw_networkx_edges(G, pos, edgelist=edges, width=qdrawconst * np.array(qs) / qmax, edge_color='r')
+
+    """
+    #### IN_NODES i OUT_NODES ####
+    x_in, y_in = [], []
+    for node in in_nodes:
+        x_in.append(pos[node][0])
+        y_in.append(pos[node][1])
+    plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
+
+    x_out, y_out = [], []
+    for node in out_nodes:
+        x_out.append(pos[node][0])
+        y_out.append(pos[node][1])
+    plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
+    """
+    plt.axis('equal')
+    plt.xticks([], [])
+    plt.yticks([], [])
+    plt.savefig(name)
+    plt.close()

@@ -3,15 +3,16 @@ import networkx as nx
 import numpy as np
 import scipy.spatial
 
-
 def Build_delaunay_net(n, diameter_wiggle_param=1):
     N = n**2
+
 
     points = np.random.uniform(0, n, (N, 2))
     points = np.array(sorted(points, key = lambda elem: (elem[0]//1, elem[1])))
 
     points_above = points.copy() + np.array([0, n])
     points_below = points.copy() + np.array([0, -n])
+
 
     all_points = np.concatenate([points, points_above, points_below])
 
@@ -43,9 +44,11 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
 
     # now choose edges between "points" and take care of the boundary conditions (edges between points and points_above)
     # points are indexes 0:(N-1), points_above are N:(2N-1)
+
     
     final_edges = []
     dontdraw_edges = []
+
     final_edges_lengths = []
     for edge, l in zip(edges, edges_lengths):
         n1, n2 = edge
@@ -58,7 +61,9 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
 
         elif (n1 < N) and (n2 >= N) and (n2 < 2*N):
             final_edges.append((n1, n2-N))
+
             dontdraw_edges.append((n1, n2-N))
+
             final_edges_lengths.append(l)
 
 
@@ -88,6 +93,9 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
             G.remove_edge(node, neigh)
 
     return G, dontdraw_edges, "de"
+
+
+
 
 
 

@@ -15,9 +15,6 @@ reg_reg_edges, reg_something_edges, other_edges = Ge.create_edgelist(G, in_nodes
 presult = Pr.create_vector()
 oxresult = Ox.create_vector()
 
-#oxtype = oxresult.copy()
-#oxtype[out_nodes_ox] = 1.
-
 
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
@@ -55,25 +52,18 @@ for i in range(iters):
         print('Q_in =', Q_in, 'Q_out =', Q_out)
 
 
+
         Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = oxnow)
         Dr.drawd(name = f'd{i//save_every:04d}.png', oxdraw = [])
+
         Dr.drawq(name = f'q{i//save_every:04d}.png', oxdraw = [])
         #Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow/np.max(vnow))
         #Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=oxresult)
         Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult)
+        Dr.drawblood(name=f'q_blood{i // save_every:04d}.png', oxresult=oxresult, data='q')
+        Dr.drawblood(name=f'd_blood{i // save_every:04d}.png', oxresult=oxresult, data='d')
 
-        """
-        a=0
-        nowtab = []
-        ntab = []
-        for index in range(n**2):
-            if index%n==0:
-                nowtab.append(oxnow[index])
-                ntab.append(a)
-                a+=1
-        plt.plot(ntab, nowtab)
-        plt.show()
-        """
+
 
     reg_reg_edges, reg_something_edges, in_edges=Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
     reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
