@@ -10,7 +10,7 @@ Funkcja budująca siatkę trójkątną o wymiarach n x n węzłów, jako graf
    
 def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_param = 0):
     G = nx.Graph()    
-    lens = []
+    
     # sąsiedztwo: pierwsza i ostatnia kolumna siatki ma tylko po jednym połączeniu,
     # żeby łatwiej trzymać stały wpływ i cisnienie; poza tym standardowe sąsiedztwo
     # dla trójkatnej siatki
@@ -131,13 +131,16 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
             len = np.linalg.norm(np.array(pos1)-np.array(pos2))
             if (len <= 1+length_wiggle_param): # czyli nie zmieniaj dlugosci miedzy brzegowymi wezlami, ona jest stale 1
                 G[node][neigh]['length'] = len
+    def find_boundary_edges():
+        boundary_edges = [] 
+        for edge in G.edges(data="q"):
+            if ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+                boundary_edges.append((edge[0], edge[1]))        
+        return boundary_edges
     
-    dontdraw_edges = []    
     add_nodes()
     wiggle_nodes(length_wiggle_param)
     add_edges(diameter_wiggle_param, l)
     find_edges_lengths()
-    for edge in G.edges(data="q"):
-        if ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
-            dontdraw_edges.append((edge[0], edge[1]))
-    return G, dontdraw_edges, "tr"
+    boundary_edges = find_boundary_edges()
+    return G, boundary_edges, "tr"

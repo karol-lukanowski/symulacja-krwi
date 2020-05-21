@@ -27,8 +27,8 @@ F0 = 0.2
 F1 = 1
 z0 = 0
 z1 = 1
-F_mult = 10000
-dt = 0.1
+F_mult = 100
+dt = 1
 
 
 D = 1 # współczynnik dyfuzji
@@ -41,29 +41,31 @@ F0_ox = 0.1
 F1_ox = 1
 z0_ox = 0
 z1_ox = 1
-F_mult_ox = 0.01
+F_mult_ox = 0.001
 dt_ox = 3
 
 
 qdrawconst = 5
 ddrawconst = 3
 
-dontdraw_edges = []
 
 
-#G, dontdraw_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
-G, dontdraw_edges, nettype = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
 
-#in_nodes, out_nodes = equidistant_geometry(G, n, R = n//2.5, xrange = n, yrange = n, how_many = 200)
+G, boundary_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
+#G, boundary_edges, nettype = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
+
+
 
 #geo = "cylindrical"
-#geo = "donut"
-geo = "rect"
+geo = "donut"
+#geo = "rect"
 #geo = "own"
-#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5, **{'del': True})
-#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
+
 in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del': True})
-#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo = 'rect')
+
+
+
+#in_nodes, out_nodes = equidistant_geometry(G, n, R = n//2.5, xrange = n, yrange = n, how_many = 200)
 #in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
 
 

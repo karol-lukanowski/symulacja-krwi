@@ -1,13 +1,11 @@
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import scipy.spatial
 
 def Build_delaunay_net(n, diameter_wiggle_param=1):
-    N = n**2
+    nkw = n**2
 
-
-    points = np.random.uniform(0, n, (N, 2))
+    points = np.random.uniform(0, n, (nkw, 2))
     points = np.array(sorted(points, key = lambda elem: (elem[0]//1, elem[1])))
 
     points_above = points.copy() + np.array([0, n])
@@ -47,7 +45,7 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
 
     
     final_edges = []
-    dontdraw_edges = []
+    boundary_edges = []
 
     final_edges_lengths = []
     for edge, l in zip(edges, edges_lengths):
@@ -55,20 +53,20 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         if n2 < n1:
             n1, n2 = n2, n1
 
-        if (n1 < N) and (n2 < N):
+        if (n1 < nkw) and (n2 < nkw):
             final_edges.append((n1, n2))
             final_edges_lengths.append(l)
 
-        elif (n1 < N) and (n2 >= N) and (n2 < 2*N):
-            final_edges.append((n1, n2-N))
+        elif (n1 < nkw) and (n2 >= nkw) and (n2 < 2*nkw):
+            final_edges.append((n1, n2-nkw))
 
-            dontdraw_edges.append((n1, n2-N))
+            boundary_edges.append((n1, n2-nkw))
 
             final_edges_lengths.append(l)
 
 
     G = nx.Graph()
-    G.add_nodes_from(list(range(N)))
+    G.add_nodes_from(list(range(nkw)))
 
     G.add_edges_from(final_edges)
 
@@ -92,7 +90,7 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         if l > 3 * length_avr:
             G.remove_edge(node, neigh)
 
-    return G, dontdraw_edges, "de"
+    return G, boundary_edges, "de"
 
 
 

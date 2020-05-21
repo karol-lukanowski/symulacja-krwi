@@ -108,3 +108,12 @@ def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
 
 
     return reg_reg_edges, reg_something_edges, in_edges, oxresult
+
+def update_oxresult(reg_reg_edges, reg_something_edges, in_edges, oxresult):
+    for e in reg_reg_edges+reg_something_edges+in_edges:
+        n1, n2, d, l = e
+        if (oxresult[n1] == 1 or oxresult[n2] == 1):
+            if d > dth:
+                oxresult[n1] = 1
+                oxresult[n2] = 1
+    return oxresult

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
-from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dontdraw_edges, dirname
+from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth, boundary_edges, dirname
 import pressure as Pr
 import oxygen as Ox
 import vegf as Ve
@@ -32,7 +32,7 @@ def drawq(name, normalize=True, oxdraw=[]):
     qs = []
     for edge in G.edges(data='q'):
             x, y, q = edge
-            if (x, y) not in dontdraw_edges:
+            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
                 qs.append(q)
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(qs) / qmax)
@@ -66,7 +66,7 @@ def drawq(name, normalize=True, oxdraw=[]):
 
 def drawd(name, normalize=True, oxdraw = []):
     """
-    rysowanie przepływów
+    rysowanie srednic
     """
     plt.figure(figsize=(20, 20))
     pos = nx.get_node_attributes(G, 'pos')
@@ -82,7 +82,7 @@ def drawd(name, normalize=True, oxdraw = []):
     ds = []
     for edge in G.edges(data='d'):
             x, y, d = edge
-            if (x, y) not in dontdraw_edges and (y, x) not in dontdraw_edges:
+            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
                 ds.append(d)
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(ds) / dmax)
@@ -112,63 +112,50 @@ def drawd(name, normalize=True, oxdraw = []):
 
 
 
-def drawhist(name, oxnow=[], oxresult=[], vnow = []):
+def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     """
-    rysowanie przepływów
+    rysowanie histogramów
     """
     dhist=[[], [], [], [], [], [], []]
     qhist=[[], [], [], [], [], [], []]
     shearhist=[[], [], [], [], [], [], []]
-    Fhist=[[], [], [], [], [], [], []]
     shearhistox=[[], [], [], [], [], [], []]
-
     colors=[]
     dmax=1
     shearmax=0.001
-    Fmax=0
     shearmaxox=0.001
-
-    
     qmax = max([edge[2] for edge in G.edges(data='q')])
     for n1, n2 in G.edges():
         q=G[n1][n2]['q']
         d=G[n1][n2]['d']
-        F=F_mult*c2*q/d**3
+        F=F_mult*c2*q/d**3 * dt
         shear=Pr.d_update(F)
+        F_ox=F_mult_ox*np.abs(vnow[n1] - vnow[n2]) * dt_ox
+        shearox=Ve.d_update(F_ox)
         if d>dmax:
             dmax=d
         if shear>shearmax:
             shearmax=shear
-        if F>Fmax:
-            Fmax=F
-        F_ox=F_mult_ox*np.abs(vnow[n1] - vnow[n2])
-        shearox=Ve.d_update(F_ox)
         if shearox>shearmaxox:
             shearmaxox=shearox
         qhist[int(6*q/qmax)].append(q)
         dhist[int(6*q/qmax)].append(d)
-        Fhist[int(6*q/qmax)].append(F)
         shearhist[int(6*q/qmax)].append(shear)
         shearhistox[int(6*q/qmax)].append(shearox)
-
-
     
     color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k',]
     for edge in G.edges(data="q"):
         x, y, q = edge
-        if (x, y) not in dontdraw_edges:
-            colors.append(color[int(6*edge[2]/qmax)])
-        
+        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
+            colors.append(color[int(6*edge[2]/qmax)])       
+    
     pos = nx.get_node_attributes(G, 'pos')
-
-
-
-
+    
     edges = []
     qs = []
     for edge in G.edges(data='q'):
             x, y, q = edge
-            if (x, y) not in dontdraw_edges:
+            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
                 qs.append(q)
 
@@ -182,28 +169,19 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
         x_out.append(pos[node][0])
         y_out.append(pos[node][1])
         
-    x_ox, y_ox = [], []
-    for i, e in enumerate(oxresult):
-        if e == 1:
-            x_ox.append(pos[i][0])
-            y_ox.append(pos[i][1])
-    
-    oxresult2=oxresult.copy()        
-    oxresult2 = oxresult2.astype(int)
-    oxresult3 = oxresult2-0.5
-    oxresult2 = list(oxresult2)
-    
-    
+
+ 
     plt.figure(figsize=(20, 20))
     plt.suptitle('Flow for n = '+str(n))
     spec = gridspec.GridSpec(ncols=4, nrows=2, height_ratios=[5, 1])
+    
     plt.subplot(spec.new_subplotspec((0, 0), colspan=4))
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
-    plt.scatter(x_ox, y_ox, s=60, facecolors='pink', edgecolors='black')
     nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=qdrawconst * np.array(qs) / qmax)
-#    nx.draw_networkx_nodes(G, pos, node_size=1000 * oxresult2, node_color=oxresult2, cmap = 'bwr')
+    nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
     plt.axis('equal')
+    
     plt.subplot(spec[4]).set_title('Diameter')
     cindex=0
     plt.xlim((1,1.1*dmax))
@@ -211,7 +189,9 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
+    plt.axvline(dth, color='k', linestyle='dashed', linewidth=1)
     plt.yscale("log")
+    
     plt.subplot(spec[5]).set_title('Flow')
     cindex=0
     plt.xlim((0, 1.1*qmax))
@@ -220,23 +200,25 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log")
-    plt.subplot(spec[6]).set_title('Oxygen')
+    
+    plt.subplot(spec[6]).set_title('Shear growth')
     cindex=0
-#    plt.xlim((0, 1.1*shearmaxox))
-#    for hist in shearhistox:
-#        if len(hist)>1:
-#            plt.hist(hist, bins=50, color=color[cindex])
-#        cindex+=1
-    plt.hist(vnow, bins=50)
+    plt.xlim((0, 1.1*shearmax))
+    for hist in shearhist:
+        if len(hist)>1:
+            plt.hist(hist, bins=50, color=color[cindex])
+        cindex+=1
     plt.yscale("log")        
-    plt.subplot(spec[7]).set_title('Shear')
+    
+    plt.subplot(spec[7]).set_title('Oxygen growth')
     cindex=0
     plt.xlim((0,1.1*shearmaxox))
     for hist in shearhistox:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
-    plt.yscale("log") 
+    plt.yscale("log")
+    
     plt.savefig(dirname + "/" + name)
     plt.close()
 
@@ -252,9 +234,9 @@ def drawblood(name, oxresult, data='q'):
 
     edges = []
     qs = []
-    for edge in G.edges(data='q'):
+    for edge in G.edges(data=data):
             x, y, q = edge
-            if (x, y) not in dontdraw_edges:
+            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
                 qs.append(q)
 
@@ -283,5 +265,5 @@ def drawblood(name, oxresult, data='q'):
     plt.axis('equal')
     plt.xticks([], [])
     plt.yticks([], [])
-    plt.savefig(name)
+    plt.savefig(dirname + "/" + name)
     plt.close()
