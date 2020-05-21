@@ -1,17 +1,19 @@
 import numpy as np
+import os
 
 import triangular_net as Tr
 import delaunay as De
 from geometry import set_geometry, equidistant_geometry
 
-n = 101 # rozmiar siatki
+
+n = 201 # rozmiar siatki
 nkw = n ** 2
-iters = 301  # liczba iteracji
+iters = 1001  # liczba iteracji
 save_every = 30
 
 
-length_wiggle_param = 1
-diameter_wiggle_param = 3
+length_wiggle_param = 0.1
+diameter_wiggle_param = 0.3
 
 
 qin = 10  # ilosć wpływającej krwi
@@ -26,8 +28,8 @@ F1 = 1
 z0 = 0
 z1 = 1
 F_mult = 10000
-dt = 0.8
-#dt = 0.1
+dt = 0.1
+
 
 D = 1 # współczynnik dyfuzji
 k = 0.1 # stała reakcji
@@ -43,22 +45,31 @@ F_mult_ox = 0.01
 dt_ox = 3
 
 
-qdrawconst = 2
-#qdrawconst = 5
+qdrawconst = 5
 ddrawconst = 3
 
-G = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
-#G = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
+dontdraw_edges = []
 
+
+G, dontdraw_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
+#G, dontdraw_edges, nettype = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
 
 #in_nodes, out_nodes = equidistant_geometry(G, n, R = n//2.5, xrange = n, yrange = n, how_many = 200)
 
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5, **{'del': True})
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20, **{'del': True})
-in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo = 'rect')
-#in_nodes, out_nodes, reg_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
+geo = "cylindrical"
+#geo = "donut"
+#geo = "rect"
+#geo = "own"
+#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5, **{'del': True})
+#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
+in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del': True})
+#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo = 'rect')
+#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
+
 
 
 in_nodes_ox = in_nodes
 out_nodes_ox = out_nodes
+
+dirname = nettype + geo + str(n) + "lw" + str(length_wiggle_param) + "dw" + str(diameter_wiggle_param) + "dt" + str(dt) + "dtox" + str(dt_ox)
+os.makedirs(dirname)

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
-from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2
+from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dontdraw_edges, dirname
 import pressure as Pr
 import oxygen as Ox
 import vegf as Ve
@@ -31,10 +31,10 @@ def drawq(name, normalize=True, oxdraw=[]):
     edges = []
     qs = []
     for edge in G.edges(data='q'):
-        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
             x, y, q = edge
-            edges.append((x, y))
-            qs.append(q)
+            if (x, y) not in dontdraw_edges:
+                edges.append((x, y))
+                qs.append(q)
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(qs) / qmax)
 
     #### IN_NODES i OUT_NODES ####
@@ -58,7 +58,7 @@ def drawq(name, normalize=True, oxdraw=[]):
     #plt.show()
 
     plt.axis('equal')
-    plt.savefig(name)
+    plt.savefig(dirname + "/" + name)
     plt.close()
 
 
@@ -81,10 +81,10 @@ def drawd(name, normalize=True, oxdraw = []):
     edges = []
     ds = []
     for edge in G.edges(data='d'):
-        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
             x, y, d = edge
-            edges.append((x, y))
-            ds.append(d)
+            if (x, y) not in dontdraw_edges and (y, x) not in dontdraw_edges:
+                edges.append((x, y))
+                ds.append(d)
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(ds) / dmax)
 
     #### IN_NODES i OUT_NODES ####
@@ -105,7 +105,7 @@ def drawd(name, normalize=True, oxdraw = []):
 
 
     plt.axis('equal')
-    plt.savefig(name)
+    plt.savefig(dirname + "/" + name)
     plt.close()    
     
 
@@ -236,7 +236,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log") 
-    plt.savefig(name)
+    plt.savefig(dirname + "/" + name)
     plt.close()
         
     

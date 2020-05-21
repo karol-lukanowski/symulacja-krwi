@@ -5,14 +5,17 @@ import scipy.spatial
 
 
 def Build_delaunay_net(n, diameter_wiggle_param=1):
-    N = n ** 2
-    points = np.random.uniform(0, n, (N,2))
+    N = n**2
 
-    # sortowanie wezlow = najpierw po "kolumnie" od 0 do n, potem po wierszu - tak jak nasza prostokatna geometria
-    points = sorted(points, key = lambda elem: (elem[0]//1, elem[1]))
+    points = np.random.uniform(0, n, (N, 2))
+    points = np.array(sorted(points, key = lambda elem: (elem[0]//1, elem[1])))
 
-    # make a Delaunay triangulation of the point data
-    delTri = scipy.spatial.Delaunay(points)
+    points_above = points.copy() + np.array([0, n])
+    points_below = points.copy() + np.array([0, -n])
+
+    all_points = np.concatenate([points, points_above, points_below])
+
+    delTri = scipy.spatial.Delaunay(all_points)
 
     # create a set for edges that are indexes of the points
     edges = set()
@@ -30,47 +33,63 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         edges.add((int(edge[0]), int(edge[1])))
 
     edges = list(edges)
+    edges_lengths = []
+
+    for edge in edges:
+        n1, n2 = edge
+        pos1, pos2 = all_points[n1], all_points[n2]
+        l = np.linalg.norm(np.array(pos1) - np.array(pos2))
+        edges_lengths.append(l)
+
+    # now choose edges between "points" and take care of the boundary conditions (edges between points and points_above)
+    # points are indexes 0:(N-1), points_above are N:(2N-1)
+    
+    final_edges = []
+    dontdraw_edges = []
+    final_edges_lengths = []
+    for edge, l in zip(edges, edges_lengths):
+        n1, n2 = edge
+        if n2 < n1:
+            n1, n2 = n2, n1
+
+        if (n1 < N) and (n2 < N):
+            final_edges.append((n1, n2))
+            final_edges_lengths.append(l)
+
+        elif (n1 < N) and (n2 >= N) and (n2 < 2*N):
+            final_edges.append((n1, n2-N))
+            dontdraw_edges.append((n1, n2-N))
+            final_edges_lengths.append(l)
+
 
     G = nx.Graph()
-    G.add_nodes_from(list(range(n**2)))
+    G.add_nodes_from(list(range(N)))
 
-    G.add_edges_from(edges)
+    G.add_edges_from(final_edges)
 
     for node in G.nodes:
         G.nodes[node]["pos"] = points[node]
 
-    def find_edges_lengths_and_diameters():
-        length_avr = 0
-        for node, neigh in G.edges():
-            pos1 = G.nodes[node]['pos']
-            pos2 = G.nodes[neigh]['pos']
+    length_avr = 0
+    for edge, l in zip(final_edges, final_edges_lengths):
+        node, neigh = edge
+        G[node][neigh]['length'] = l
+        length_avr += l
+        G[node][neigh]['d'] = np.random.rand() * diameter_wiggle_param + 1
+        G[node][neigh]['q'] = 0
 
-            l = np.linalg.norm(np.array(pos1) - np.array(pos2))
-            G[node][neigh]['length'] = l
-            length_avr += l
-            G[node][neigh]['d'] = np.random.rand() * diameter_wiggle_param + 1
-            G[node][neigh]['q'] = 0
+    length_avr /= len(G.edges())
 
-        length_avr /= len(G.edges())
+    # Usunięcie zbyt długich krawędzi (szczególnie tych po brzegu)
+    Gcopy = G.copy()
+    for node, neigh in Gcopy.edges():
+        l = G[node][neigh]['length']
+        if l > 3 * length_avr:
+            G.remove_edge(node, neigh)
 
-        # Usunięcie zbyt długich krawędzi (szczególnie tych po brzegu)
-        Gcopy = G.copy()
-        for node, neigh in Gcopy.edges():
-            l = G[node][neigh]['length']
-            if l > 3 * length_avr:
-                G.remove_edge(node, neigh)
+    return G, dontdraw_edges, "de"
 
-    find_edges_lengths_and_diameters()
 
-    """
-    plt.figure(figsize=(7, 7))
-    nx.draw(G,pos = points,node_size=10,with_labels=False)
-    id_center = find_center_node()
-    nx.draw_networkx(G, pos = points, nodelist = [id_center], node_size=50, node_color='r', with_labels = False)
-    plt.show()
-    """
-
-    return G
 
 def find_center_node(G, n, xrange, yrange):
     x0, y0 = xrange / 2, yrange / 2

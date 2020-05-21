@@ -70,7 +70,8 @@ def d_update(F):
     else:
         result = z0_ox
     return result * dt_ox
-
+#    return (1-1/(1+np.exp(10*(F-0.5)))) * dt_ox
+    
 
 def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
     for i,e in enumerate(reg_reg_edges):

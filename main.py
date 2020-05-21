@@ -4,22 +4,13 @@ import draw_net as Dr
 import pressure as Pr
 import oxygen as Ox
 import vegf as Ve
-from config import n, G, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, iters, in_edges, c1, save_every, dth
+import geometry as Ge
+from config import n, G, in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, iters, in_edges, c1, save_every, dth
 import matplotlib.pyplot as plt
 import time
 
-reg_reg_edges, reg_something_edges, other_edges = [],  [], []
-for n1, n2 in G.edges():
-    d = G[n1][n2]['d']
-    l = G[n1][n2]['length']
-    if (n1 not in in_nodes and n1 not in out_nodes) and (n2 not in in_nodes and n2 not in out_nodes):
-        reg_reg_edges.append((n1, n2, d, l))
-    elif (n1 not in in_nodes and n1 not in out_nodes):
-        reg_something_edges.append((n1, n2, d, l))
-    elif (n2 not in in_nodes and n2 not in out_nodes):
-        reg_something_edges.append((n2, n1, d, l ))
-    else:
-        other_edges.append((n1, n2, d, l))
+
+reg_reg_edges, reg_something_edges, other_edges = Ge.create_edgelist(G, in_nodes, out_nodes, reg_nodes)
 
 presult = Pr.create_vector()
 oxresult = Ox.create_vector()
@@ -40,7 +31,8 @@ for i in range(iters):
     vresult = Ve.create_vector(oxnow, oxresult)
     vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges)
     vnow = Ve.solve_equation(vmatrix, vresult)
-
+    for node in other_nodes:
+        vnow[node] = 0
     if i%save_every == 0:
         Q_in = 0
         Q_out = 0
@@ -63,8 +55,8 @@ for i in range(iters):
         print('Q_in =', Q_in, 'Q_out =', Q_out)
 
 
-        #Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = oxnow)
-        #Dr.drawd(name = f'd{i//save_every:04d}.png', oxresult = oxresult)
+        Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = oxnow)
+        Dr.drawd(name = f'd{i//save_every:04d}.png', oxdraw = [])
         Dr.drawq(name = f'q{i//save_every:04d}.png', oxdraw = [])
         #Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow/np.max(vnow))
         #Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=oxresult)

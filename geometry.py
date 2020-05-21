@@ -93,12 +93,7 @@ def search_nodes(G, n0):
 
     rec_search(n0)
     return nodes
-def find_in_nodes(G):
-    n0 = int(n * n / 2)
-    return search_nodes(G, n0)
-def find_out_nodes(G):
-    n0 = 1
-    return search_nodes(G, n0)
+
 
 def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
     def rect_default_nodes():
@@ -138,7 +133,7 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
                 out_nodes.append(node)
             elif r > R_s and r < R_s + 1:
                 in_nodes.append(node)
-            elif r < R+1:
+            elif r < R+1 and r > R_s:
                 reg_nodes.append(node)
         return in_nodes, out_nodes, reg_nodes
 
@@ -169,8 +164,13 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
                 d = G[node][neigh]['d']
                 l = G[node][neigh]['length']
                 in_edges.append((node, neigh, d, l))
-
-    return in_nodes, out_nodes, reg_nodes, in_edges
+    
+    other_nodes = []           
+    for node in G.nodes():
+        if (node not in reg_nodes) and (node not in in_nodes) and (node not in out_nodes):
+            other_nodes.append(node)
+                
+    return in_nodes, out_nodes, reg_nodes, other_nodes, in_edges
 
 
 
@@ -220,3 +220,47 @@ def equidistant_geometry(G, n, R, xrange, yrange, how_many):
     in_nodes = [id_center]
 
     return in_nodes, out_nodes
+
+def create_edgelist(G, in_nodes, out_nodes, reg_nodes):
+    reg_reg_edges, reg_something_edges, other_edges = [],  [], []
+    for n1, n2 in G.edges():
+        d = G[n1][n2]['d']
+        l = G[n1][n2]['length']
+        if (n1 not in in_nodes and n1 not in out_nodes) and (n2 not in in_nodes and n2 not in out_nodes):
+            reg_reg_edges.append((n1, n2, d, l))
+        elif (n1 not in in_nodes and n1 not in out_nodes):
+            reg_something_edges.append((n1, n2, d, l))
+        elif (n2 not in in_nodes and n2 not in out_nodes):
+            reg_something_edges.append((n2, n1, d, l ))
+        else:
+            other_edges.append((n1, n2, d, l))
+       
+    removetab_reg = []
+    
+    for index, (n1, n2, d, l) in enumerate(reg_reg_edges):
+        if n1 not in reg_nodes and n2 in reg_nodes:
+            removetab_reg.append(index)
+        elif n1 in reg_nodes and n2 not in reg_nodes:
+            removetab_reg.append(index)
+    
+    removetab_something = []
+
+    for index, (n1, n2, d, l) in enumerate(reg_something_edges):
+        if n1 not in reg_nodes and n2 not in in_nodes:
+            removetab_something.append(index)
+    
+    regnew = []
+    somethingnew = []
+    
+    for index, (n1, n2, d, l) in enumerate(reg_reg_edges):
+        if index not in removetab_reg:
+            regnew.append((n1, n2, d, l))
+        
+    for index, (n1, n2, d, l) in enumerate(reg_something_edges):
+        if index not in removetab_something:
+            somethingnew.append((n1, n2, d, l))
+    
+    reg_reg_edges = regnew
+    reg_something_edges = somethingnew
+
+    return reg_reg_edges, reg_something_edges, other_edges
