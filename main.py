@@ -6,7 +6,7 @@ import oxygen as Ox
 import vegf as Ve
 import geometry as Ge
 from config import G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, in_edges, save_every
-import time
+
 
 reg_reg_edges, reg_something_edges, other_edges = Ge.create_edgelist(G, in_nodes, out_nodes, reg_nodes)
 
