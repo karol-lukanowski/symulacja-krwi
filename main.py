@@ -28,7 +28,7 @@ for i in range(iters):
     vnow = Ve.solve_equation(vmatrix, vresult)
     for node in other_nodes:
         vnow[node] = 0
-    t1 = time.time()
+
     if i%save_every == 0:
         Pr.update_network(reg_reg_edges, reg_something_edges, pnow)
         
@@ -40,8 +40,6 @@ for i in range(iters):
         Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult)
         Dr.drawblood(name=f'q_blood{i // save_every:04d}.png', oxresult=oxresult, data='q')
         Dr.drawblood(name=f'd_blood{i // save_every:04d}.png', oxresult=oxresult, data='d')
-    t2 = time.time()
-    print (t2-t1)
 
 
     reg_reg_edges, reg_something_edges, in_edges=Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
