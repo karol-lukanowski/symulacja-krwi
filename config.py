@@ -51,14 +51,14 @@ ddrawconst = 3
 dontdraw_edges = []
 
 
-G, dontdraw_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
-#G, dontdraw_edges, nettype = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
+#G, dontdraw_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
+G, dontdraw_edges, nettype = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
 
 #in_nodes, out_nodes = equidistant_geometry(G, n, R = n//2.5, xrange = n, yrange = n, how_many = 200)
 
-geo = "cylindrical"
+#geo = "cylindrical"
 #geo = "donut"
-#geo = "rect"
+geo = "rect"
 #geo = "own"
 #in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='cylindrical', R=n//2.5, **{'del': True})
 #in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='donut', R=n//2.5, R_s=n//20)
@@ -71,5 +71,6 @@ in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo=g
 in_nodes_ox = in_nodes
 out_nodes_ox = out_nodes
 
-dirname = nettype + geo + str(n) + "lw" + str(length_wiggle_param) + "dw" + str(diameter_wiggle_param) + "dt" + str(dt) + "dtox" + str(dt_ox)
-os.makedirs(dirname)
+dirname = nettype + geo + "n" + str(n) + "lw" + str(length_wiggle_param) + "dw" + str(diameter_wiggle_param) + "dt" + str(dt) + "dtox" + str(dt_ox)
+if not os.path.isdir(dirname):
+    os.makedirs(dirname)

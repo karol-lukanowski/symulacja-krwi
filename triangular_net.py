@@ -138,6 +138,6 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
     add_edges(diameter_wiggle_param, l)
     find_edges_lengths()
     for edge in G.edges(data="q"):
-        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+        if ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
             dontdraw_edges.append((edge[0], edge[1]))
     return G, dontdraw_edges, "tr"

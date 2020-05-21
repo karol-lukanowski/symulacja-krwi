@@ -150,12 +150,13 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
         Fhist[int(6*q/qmax)].append(F)
         shearhist[int(6*q/qmax)].append(shear)
         shearhistox[int(6*q/qmax)].append(shearox)
-    colortab = []
+
 
     
     color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k',]
     for edge in G.edges(data="q"):
-        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+        x, y, q = edge
+        if (x, y) not in dontdraw_edges:
             colors.append(color[int(6*edge[2]/qmax)])
         
     pos = nx.get_node_attributes(G, 'pos')
@@ -166,10 +167,10 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = []):
     edges = []
     qs = []
     for edge in G.edges(data='q'):
-        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
             x, y, q = edge
-            edges.append((x, y))
-            qs.append(q)
+            if (x, y) not in dontdraw_edges:
+                edges.append((x, y))
+                qs.append(q)
 
     x_in, y_in = [], []
     for node in in_nodes:
@@ -251,11 +252,11 @@ def drawblood(name, oxresult, data='q'):
 
     edges = []
     qs = []
-    for edge in G.edges(data=data):
-        if not ((edge[0] % n == 0 and edge[1] % n == n - 1) or (edge[1] % n == 0 and edge[0] % n == n - 1)):
+    for edge in G.edges(data='q'):
             x, y, q = edge
-            edges.append((x, y))
-            qs.append(q)
+            if (x, y) not in dontdraw_edges:
+                edges.append((x, y))
+                qs.append(q)
 
     #draw only those between oxygen nodes:
     for i, edge in enumerate(edges):
