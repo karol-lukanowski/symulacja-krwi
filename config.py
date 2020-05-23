@@ -27,8 +27,8 @@ F0 = 0.2
 F1 = 1
 z0 = 0
 z1 = 1
-F_mult = 100
-dt = 1
+F_mult = 500
+dt = 1.1
 
 
 D = 1 # współczynnik dyfuzji
@@ -41,7 +41,7 @@ F0_ox = 0.1
 F1_ox = 1
 z0_ox = 0
 z1_ox = 1
-F_mult_ox = 0.001
+F_mult_ox = 0.005
 dt_ox = 3
 
 
@@ -56,12 +56,12 @@ G, boundary_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diam
 
 
 
-#geo = "cylindrical"
-geo = "donut"
+geo = "cylindrical"
+#geo = "donut"
 #geo = "rect"
 #geo = "own"
 
-in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del': True})
+in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del': True})
 
 
 

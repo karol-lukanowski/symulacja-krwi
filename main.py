@@ -5,10 +5,10 @@ import pressure as Pr
 import oxygen as Ox
 import vegf as Ve
 import geometry as Ge
-from config import G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, in_edges, save_every
-import time
+from config import G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, in_edges, save_every, boundary_nodes_out, boundary_nodes_in
 
-reg_reg_edges, reg_something_edges, other_edges = Ge.create_edgelist(G, in_nodes, out_nodes, reg_nodes)
+reg_reg_edges, reg_something_edges, other_edges = Ge.create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in)
+
 
 presult = Pr.create_vector()
 oxresult = Ox.create_vector()

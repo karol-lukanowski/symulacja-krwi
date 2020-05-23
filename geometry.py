@@ -2,6 +2,7 @@
 import numpy as np
 import networkx as nx
 import delaunay as De
+import time
 
 # Funkcje do znajdowania wezlow na okregu
 def find_circle_nodes(G, n, R):
@@ -100,7 +101,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         in_nodes = list(range(n))
         reg_nodes = list(range(n,n * (n - 1)))
         out_nodes = list(range(n * (n - 1), n * n))
-        return in_nodes, out_nodes, reg_nodes
+        boundary_nodes_out = []
+        boundary_nodes_in = []
+        return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
     def cyl_default_nodes():
         id_center = n * n // 2
         if 'del' in kwargs and kwargs['del'] == True:
@@ -109,15 +112,21 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         x0, y0 = G.nodes[id_center]["pos"]
         out_nodes = []
         reg_nodes = []
+        boundary_nodes_out = []
+        boundary_nodes_in = []
         for node in G.nodes:
             pos = G.nodes[node]["pos"]
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
             if r > R and r < R + 1:
                 out_nodes.append(node)
+            elif r > R + 1 and r < R + 3:
+                boundary_nodes_out.append(node)
+            elif r < R+1 and r > R - 2:
+                boundary_nodes_in.append(node)    
             elif r < R+1:
                 reg_nodes.append(node)
 
-        return in_nodes, out_nodes, reg_nodes
+        return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
     def don_default_nodes():
         id_center = n * n // 2
         if 'del' in kwargs and kwargs['del'] == True:
@@ -126,6 +135,8 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         in_nodes = []
         out_nodes = []
         reg_nodes = []
+        boundary_nodes_out = []
+        boundary_nodes_in = []
         for node in G.nodes:
             pos = G.nodes[node]["pos"]
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
@@ -133,9 +144,14 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
                 out_nodes.append(node)
             elif r > R_s and r < R_s + 1:
                 in_nodes.append(node)
+            elif r > R + 1 and r < R + 3:
+                boundary_nodes_out.append(node)
+            elif r < R+1 and r > R - 2:
+                boundary_nodes_in.append(node)
             elif r < R+1 and r > R_s:
                 reg_nodes.append(node)
-        return in_nodes, out_nodes, reg_nodes
+            
+        return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
 
     def don_default_nodes2():
         in_nodes = find_circle_nodes(G, n, R_s)[2]
@@ -144,11 +160,11 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
 
     in_nodes, out_nodes, reg_nodes, in_edges = [], [], [], []
     if geo == 'rect':
-        in_nodes, out_nodes, reg_nodes = rect_default_nodes()
+        in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = rect_default_nodes()
     elif geo == 'cylindrical':
-        in_nodes, out_nodes, reg_nodes = cyl_default_nodes()
+        in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = cyl_default_nodes()
     elif geo == 'donut':
-        in_nodes, out_nodes, reg_nodes = don_default_nodes()
+        in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = don_default_nodes()
     elif geo == 'own':
         in_nodes, out_nodes = kwargs['in_nodes'], kwargs['out_nodes']
         reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
@@ -170,7 +186,7 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         if (node not in reg_nodes) and (node not in in_nodes) and (node not in out_nodes):
             other_nodes.append(node)
                 
-    return in_nodes, out_nodes, reg_nodes, other_nodes, in_edges
+    return in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges
 
 
 
@@ -221,8 +237,9 @@ def equidistant_geometry(G, n, R, xrange, yrange, how_many):
 
     return in_nodes, out_nodes
 
-def create_edgelist(G, in_nodes, out_nodes, reg_nodes):
+def create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in):
     reg_reg_edges, reg_something_edges, other_edges = [],  [], []
+
     for n1, n2 in G.edges():
         d = G[n1][n2]['d']
         l = G[n1][n2]['length']
@@ -234,19 +251,19 @@ def create_edgelist(G, in_nodes, out_nodes, reg_nodes):
             reg_something_edges.append((n2, n1, d, l ))
         else:
             other_edges.append((n1, n2, d, l))
-       
+
     removetab_reg = []
     
     for index, (n1, n2, d, l) in enumerate(reg_reg_edges):
-        if n1 not in reg_nodes and n2 in reg_nodes:
+        if n1 in boundary_nodes_in and n2 in boundary_nodes_out:
             removetab_reg.append(index)
-        elif n1 in reg_nodes and n2 not in reg_nodes:
+        elif n2 in boundary_nodes_in and n1 in boundary_nodes_out:
             removetab_reg.append(index)
-    
+
     removetab_something = []
 
     for index, (n1, n2, d, l) in enumerate(reg_something_edges):
-        if n1 not in reg_nodes and n2 not in in_nodes:
+        if n1 in boundary_nodes_out and n2 not in in_nodes:
             removetab_something.append(index)
     
     regnew = []
@@ -259,7 +276,7 @@ def create_edgelist(G, in_nodes, out_nodes, reg_nodes):
     for index, (n1, n2, d, l) in enumerate(reg_something_edges):
         if index not in removetab_something:
             somethingnew.append((n1, n2, d, l))
-    
+  
     reg_reg_edges = regnew
     reg_something_edges = somethingnew
 
