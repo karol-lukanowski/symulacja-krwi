@@ -5,22 +5,37 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
-from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth, boundary_edges, dirname
+from config import qdrawconst, ddrawconst, boundary_edges, dirname, Load, load_name, n, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth
 import pressure as Pr
 import oxygen as Ox
+import save as Sv
 import vegf as Ve
-
+'''
+if Load == True:
+    (G, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
+     F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters,
+     in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
+     in_edges, reg_reg_edges, reg_something_edges, other_edges)  = Sv.load(dirname+'/'+load_name)
+    nkw = n**2
+else:
+    from config import G, n, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth
+'''
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
 
 
-def drawq(name, normalize=True, oxdraw=[]):
+def drawq(G,name, normalize=True, oxdraw=[]):
     """
     rysowanie przepływów
     """
     plt.figure(figsize=(20, 20))
     pos = nx.get_node_attributes(G, 'pos')
-
+    new_pos = {}
+    for x in pos:
+        new_pos[x] = tuple(pos[x])
+    pos = new_pos
+    #print(G.edges())
+#    print(nx.get_edge_attributes(G, 'q'))
     if (normalize == False):
         qmax = 1
         drawconst = 1
@@ -31,10 +46,12 @@ def drawq(name, normalize=True, oxdraw=[]):
     edges = []
     qs = []
     for edge in G.edges(data='q'):
-            x, y, q = edge
-            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-                edges.append((x, y))
-                qs.append(q)
+        x, y, q = edge
+        
+        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:            
+            edges.append((x, y))
+            qs.append(q)
+    print(pos)
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(qs) / qmax)
 
     #### IN_NODES i OUT_NODES ####
@@ -64,7 +81,7 @@ def drawq(name, normalize=True, oxdraw=[]):
 
 
 
-def drawd(name, normalize=True, oxdraw = []):
+def drawd(G,name, normalize=True, oxdraw = []):
     """
     rysowanie srednic
     """
@@ -112,7 +129,7 @@ def drawd(name, normalize=True, oxdraw = []):
 
 
 
-def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
+def drawhist(G,name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     """
     rysowanie histogramów
     """
@@ -223,7 +240,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.close()
 
 
-def drawblood(name, oxresult, data='q'):
+def drawblood(G,name, oxresult, data='q'):
     """
     rysowanie krwi, data to q albo d
     """

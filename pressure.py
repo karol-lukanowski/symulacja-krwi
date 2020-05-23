@@ -1,11 +1,19 @@
 import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
+import save as Sv
+import networkx as nx
 from collections import defaultdict
-from config import G, nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
-
-
-
+from config import Load, load_name, dirname
+if Load == True:
+    (G1, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
+     F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters,
+     in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
+     in_edges, reg_reg_edges, reg_something_edges, other_edges)  = Sv.load(dirname+'/'+load_name)
+    nkw = n**2
+else:
+    from config import nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
+    
 def solve_equation(matrix, presult):
     return sprlin.spsolve(matrix, presult)
 
@@ -99,19 +107,19 @@ def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
 
     return reg_reg_edges, reg_something_edges, in_edges
 
-def update_network(reg_reg_edges, reg_something_edges, pnow):
+def update_network(G1,reg_reg_edges, reg_something_edges, pnow):
     Q_in = 0
     Q_out = 0
     
     for n1, n2, d, l in reg_reg_edges:
-        G[n1][n2]['d']= d
+        G1[n1][n2]['d']= d
         q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
-        G[n1][n2]['q'] = q
+        G1[n1][n2]['q'] = q
 
     for n1, n2, d, l in reg_something_edges:        
-        G[n1][n2]['d'] = d
+        G1[n1][n2]['d'] = d
         q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
-        G[n1][n2]['q'] = q
+        G1[n1][n2]['q'] = q
         
         if n2 in in_nodes:
             Q_in += q
@@ -119,3 +127,5 @@ def update_network(reg_reg_edges, reg_something_edges, pnow):
             Q_out += q
     
     print('Q_in =', Q_in, 'Q_out =', Q_out)
+    #print(nx.get_edge_attributes(G1, 'q'))
+    return G1
