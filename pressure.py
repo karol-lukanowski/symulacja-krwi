@@ -4,16 +4,11 @@ import numpy as np
 import save as Sv
 import networkx as nx
 from collections import defaultdict
-from config import Load, load_name, dirname
-if Load == True:
-    (G1, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-     F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters,
-     in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
-     in_edges, reg_reg_edges, reg_something_edges, other_edges)  = Sv.load(dirname+'/'+load_name)
-    nkw = n**2
-else:
-    from config import nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
-    
+from build import G, nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
+
+
+
+
 def solve_equation(matrix, presult):
     return sprlin.spsolve(matrix, presult)
 

@@ -1,17 +1,11 @@
 import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
-import save as Sv
-from config import Load, load_name, dirname
 
-if Load:
-    (G1, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-     F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters,
-     in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
-     in_edges, reg_reg_edges, reg_something_edges, other_edges)  = Sv.load(dirname+'/'+load_name)
-    nkw = n**2
-else:
-    from config import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, Dv, dth
+from build import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, Dv, dth
+
+
+
 
 def solve_equation(matrix, vresult):
     return sprlin.spsolve(matrix, vresult)

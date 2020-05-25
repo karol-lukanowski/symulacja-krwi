@@ -3,6 +3,7 @@ import numpy as np
 import networkx as nx
 import delaunay as De
 
+
 # Funkcje do znajdowania wezlow na okregu
 def find_circle_nodes(G, n, R):
     pos = nx.get_node_attributes(G, 'pos')

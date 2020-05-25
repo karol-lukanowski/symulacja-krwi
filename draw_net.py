@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
-from config import qdrawconst, ddrawconst, boundary_edges, dirname, Load, load_name, n, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth
+from build import G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth, boundary_edges, dirname, n
+
 import pressure as Pr
 import oxygen as Ox
 import save as Sv
@@ -30,12 +31,6 @@ def drawq(G,name, normalize=True, oxdraw=[]):
     """
     plt.figure(figsize=(20, 20))
     pos = nx.get_node_attributes(G, 'pos')
-    new_pos = {}
-    for x in pos:
-        new_pos[x] = tuple(pos[x])
-    pos = new_pos
-    #print(G.edges())
-#    print(nx.get_edge_attributes(G, 'q'))
     if (normalize == False):
         qmax = 1
         drawconst = 1

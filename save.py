@@ -2,26 +2,19 @@
 import networkx as nx
 import numpy as np
 import json
-import scipy.sparse as spr
-import scipy.sparse.linalg as sprlin
-from collections import defaultdict
-from config import (
-        n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, iters,  # stałe 
-        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox,                                      # stałe dla oxygen
-        in_nodes, out_nodes, reg_nodes, other_nodes,                                       # tablice
-        in_nodes_ox, out_nodes_ox,                                                         # tablice dla oxygen
-        in_edges,                                                                          # tablica tupli
-        G)                                                                                 # sieć
-def save_all(name, reg_reg_edges, reg_something_edges, other_edges, oxresult):
+
+                                                                              # sieć
+def save_all(name, reg_reg_edges, reg_something_edges, other_edges, oxresult, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, iters, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes, out_nodes, reg_nodes, other_nodes,in_nodes_ox, out_nodes_ox,in_edges,G, boundary_nodes_out, boundary_nodes_in, boundary_edges):
     consts = [n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
               F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters]
     pos = nx.get_node_attributes(G,'pos')
+    
     new_pos = {}
     for x in pos:
         new_pos[x] = tuple(pos[x])
-    #print(new_pos)
-    lists = [in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult.tolist()]
-    tuple_lists = [in_edges, reg_reg_edges, reg_something_edges, other_edges]
+
+    lists = [in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_nodes_ox, out_nodes_ox, oxresult.tolist()]
+    tuple_lists = [in_edges, reg_reg_edges, reg_something_edges, other_edges, boundary_edges]
     All = [consts, lists, tuple_lists]
     S = json.dumps(All)
     f = open(name+".json","w")
@@ -60,22 +53,26 @@ def load(name):
     (n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
      F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, old_iters) = tuple(consts)
 
-    in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult = tuple(lists)
+    in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_nodes_ox, out_nodes_ox, oxresult = tuple(lists)
     oxresult = np.array(oxresult)
-    in_edges, reg_reg_edges, reg_something_edges, other_edges = tuple(tuple_lists)
+    in_edges, reg_reg_edges, reg_something_edges, other_edges, boundary_edges = tuple(tuple_lists)
     
     in_edges = array2tuple(in_edges)
     reg_reg_edges = array2tuple(reg_reg_edges)
     reg_something_edges = array2tuple(reg_something_edges)
     other_edges = array2tuple(other_edges)
-
+    boundary_edges = array2tuple(boundary_edges)
     def reproduct():
 #        presult = create_vector()
 #        pmatrix = update_matrix(reg_reg_edges, reg_something_edges, in_edges)
 #        pnow = solve_equation(pmatrix, presult)
         G1 = nx.Graph()
-        for node in pos:
-            G1.add_node(node, pos = pos[node])
+        new_pos = {}
+        for key, value in pos.items():
+            new_pos[int(key)] =  value
+        
+        for node in new_pos:
+            G1.add_node(node, pos = new_pos[node])
         for n1, n2, d, L in reg_reg_edges:
             G1.add_edge(n1,n2, d=d,q=0, length=L)
         for n1, n2, d, L in reg_something_edges:
@@ -92,9 +89,9 @@ def load(name):
         return G1
     
     G1 = reproduct()
-    return  (G1, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
+    return  (G1, boundary_edges, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
              F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, old_iters,
-             in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
+             in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_nodes_ox, out_nodes_ox, oxresult,
              in_edges, reg_reg_edges, reg_something_edges, other_edges)
     
     
