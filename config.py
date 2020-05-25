@@ -1,10 +1,10 @@
 import numpy as np
 
 
-n = 103 # rozmiar siatki
+
+n = 201 # rozmiar siatki
 nkw = n ** 2
 iters = 61  # liczba iteracji
-
 save_every = 30
 
 
@@ -24,8 +24,7 @@ F1 = 1
 z0 = 0
 z1 = 1
 F_mult = 500
-dt = 0.8
-
+dt = 0.9
 
 
 D = 1 # współczynnik dyfuzji
@@ -38,12 +37,13 @@ F0_ox = 0.1
 F1_ox = 1
 z0_ox = 0
 z1_ox = 1
-F_mult_ox = 0.001
+F_mult_ox = 0.005
 dt_ox = 3
 
 
 qdrawconst = 5
 ddrawconst = 3
+
 
 
 load = 1
@@ -55,5 +55,5 @@ geo = "donut"
 #geo = "rect"
 #geo = "own"
 
-#nettype = "tr"
 nettype = "de"
+#nettype = "tr"

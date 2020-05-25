@@ -7,23 +7,10 @@ import save as Sv
 from build import G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, old_iters, in_edges, save_every, boundary_nodes_out, boundary_nodes_in, dirname, save_name, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes_ox, out_nodes_ox, boundary_edges, reg_reg_edges, reg_something_edges, other_edges
 
 
-if Load:
-    (G1, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-     F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, old_iters,
-     in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
-     in_edges, reg_reg_edges, reg_something_edges, other_edges)  = Sv.load(dirname+'/'+load_name)
-    nkw = n**2
-    #print(G.nodes())    
-else:
-    from config import G, in_nodes, out_nodes, reg_nodes, other_nodes, in_edges
-    reg_reg_edges, reg_something_edges, other_edges = Ge.create_edgelist(G, in_nodes, out_nodes, reg_nodes)
-    old_iters = 0
-    oxresult = Ox.create_vector()
-G1=G
-print(old_iters)
+
+oxresult = Ox.create_vector()
 presult = Pr.create_vector()
-#print(G.nodes())
-#print(nx.get_edge_attributes(G,'d'))
+
 for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
 
@@ -40,7 +27,7 @@ for i in range(iters):
         vnow[node] = 0
 
     if i%save_every == 0:
-        G1= Pr.update_network(G1, reg_reg_edges, reg_something_edges, pnow)
+        G = Pr.update_network(G, reg_reg_edges, reg_something_edges, pnow)
 
 #        Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = vnow)
         Dr.drawd(name = f'd{(i+old_iters)//save_every:04d}.png', oxdraw = [])

@@ -25,7 +25,7 @@ else:
 
 
 
-def drawq(G,name, normalize=True, oxdraw=[]):
+def drawq(name, normalize=True, oxdraw=[]):
     """
     rysowanie przepływów
     """
@@ -46,7 +46,7 @@ def drawq(G,name, normalize=True, oxdraw=[]):
         if (x, y) not in boundary_edges and (y, x) not in boundary_edges:            
             edges.append((x, y))
             qs.append(q)
-    print(pos)
+
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(qs) / qmax)
 
     #### IN_NODES i OUT_NODES ####
@@ -76,7 +76,7 @@ def drawq(G,name, normalize=True, oxdraw=[]):
 
 
 
-def drawd(G,name, normalize=True, oxdraw = []):
+def drawd(name, normalize=True, oxdraw = []):
     """
     rysowanie srednic
     """
@@ -124,7 +124,7 @@ def drawd(G,name, normalize=True, oxdraw = []):
 
 
 
-def drawhist(G,name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
+def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     """
     rysowanie histogramów
     """
@@ -235,7 +235,7 @@ def drawhist(G,name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.close()
 
 
-def drawblood(G,name, oxresult, data='q'):
+def drawblood(name, oxresult, data='q'):
     """
     rysowanie krwi, data to q albo d
     """
