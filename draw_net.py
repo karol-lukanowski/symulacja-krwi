@@ -5,22 +5,11 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
-from build import G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth, boundary_edges, dirname, n
-
 import pressure as Pr
-import oxygen as Ox
-import save as Sv
 import vegf as Ve
-'''
-if Load == True:
-    (G, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-     F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters,
-     in_nodes, out_nodes, reg_nodes, other_nodes, in_nodes_ox, out_nodes_ox, oxresult,
-     in_edges, reg_reg_edges, reg_something_edges, other_edges)  = Sv.load(dirname+'/'+load_name)
-    nkw = n**2
-else:
-    from config import G, n, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth
-'''
+from build import (G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult,
+                   c2, dt, dt_ox, dth, boundary_edges, dirname, n)
+
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
 

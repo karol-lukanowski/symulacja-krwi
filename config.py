@@ -4,7 +4,7 @@ import numpy as np
 
 n = 201 # rozmiar siatki
 nkw = n ** 2
-iters = 61  # liczba iteracji
+iters = 91  # liczba iteracji
 save_every = 30
 
 
@@ -46,7 +46,7 @@ ddrawconst = 3
 
 
 
-load = 1
+load = 1 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
 save_name = 'xd'
 load_name = 'xd'
 

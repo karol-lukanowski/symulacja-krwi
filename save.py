@@ -3,8 +3,13 @@ import networkx as nx
 import numpy as np
 import json
 
-                                                                              # sieć
-def save_all(name, reg_reg_edges, reg_something_edges, other_edges, oxresult, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, iters, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes, out_nodes, reg_nodes, other_nodes,in_nodes_ox, out_nodes_ox,in_edges,G, boundary_nodes_out, boundary_nodes_in, boundary_edges):
+                                                                            
+def save_all(name, reg_reg_edges, reg_something_edges, other_edges, oxresult,
+             n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, iters,
+             F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox,
+             in_nodes, out_nodes, reg_nodes, other_nodes,in_nodes_ox, out_nodes_ox,in_edges,
+             G, boundary_nodes_out, boundary_nodes_in, boundary_edges):
+
     consts = [n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
               F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, iters]
     pos = nx.get_node_attributes(G,'pos')
@@ -26,9 +31,6 @@ def save_all(name, reg_reg_edges, reg_something_edges, other_edges, oxresult, n,
     f.write(S)
     f.close()    
 
-#    nx.write_gexf(G, name+".gexf")
-#    nx.write_gml(G, name+'.gml', stringizer=True)
-#    nx.write_adjlist(G, name+".adjlist")
 
 def load(name):
     def array2tuple(tab):
@@ -46,9 +48,6 @@ def load(name):
     lists = All[1]
     tuple_lists = All[2]
 
-#    G = nx.read_gexf(name+".gexf", node_type = int)
-#    G = nx.read_gml(name+'.gml', destringizer=True)
-#    G = nx.read_adjlist(name+".adjlist")
 
     (n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
      F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, old_iters) = tuple(consts)
@@ -62,10 +61,8 @@ def load(name):
     reg_something_edges = array2tuple(reg_something_edges)
     other_edges = array2tuple(other_edges)
     boundary_edges = array2tuple(boundary_edges)
+
     def reproduct():
-#        presult = create_vector()
-#        pmatrix = update_matrix(reg_reg_edges, reg_something_edges, in_edges)
-#        pnow = solve_equation(pmatrix, presult)
         G1 = nx.Graph()
         new_pos = {}
         for key, value in pos.items():
@@ -77,15 +74,6 @@ def load(name):
             G1.add_edge(n1,n2, d=d,q=0, length=L)
         for n1, n2, d, L in reg_something_edges:
             G1.add_edge(n1,n2, d=d,q=0, length=L)
-        
-        '''    
-        for n1, n2, d, L in reg_reg_edges:
-            q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / L
-            G.add_edge(n1,n2, d=d,q=q, length=L)
-        for n1, n2, d, L in reg_something_edges:        
-            q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / L
-            G.add_edge(n1,n2, d=d,q=q, length=L)
-        '''
         return G1
     
     G1 = reproduct()

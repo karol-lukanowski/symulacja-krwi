@@ -1,10 +1,8 @@
 import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
-import save as Sv
-import networkx as nx
 from collections import defaultdict
-from build import G, nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
+from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
 
 
 
