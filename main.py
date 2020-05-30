@@ -12,7 +12,6 @@ from build import (G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, old_it
 
 
 
-#oxresult = Ox.create_vector()
 presult = Pr.create_vector()
 
 
@@ -34,7 +33,7 @@ for i in range(iters):
 
     if i%save_every == 0:
         G = Pr.update_network(G, reg_reg_edges, reg_something_edges, pnow)
-
+        
 #        Dr.drawhist(name = f'{i//save_every:04d}.png', oxnow = oxnow, oxresult = oxresult, vnow = vnow)
         Dr.drawd(name = f'd{(i+old_iters)//save_every:04d}.png', oxdraw = [])
         Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png', oxdraw = [])
@@ -43,7 +42,7 @@ for i in range(iters):
         Dr.drawq(name=f'veq{(i+old_iters) // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult)
         Dr.drawblood(name=f'q_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='q')
         Dr.drawblood(name=f'd_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='d')
-
+        
 
 
     reg_reg_edges, reg_something_edges, in_edges = Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)

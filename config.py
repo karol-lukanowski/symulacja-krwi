@@ -4,12 +4,12 @@ import numpy as np
 
 n = 201 # rozmiar siatki
 nkw = n ** 2
-iters = 91  # liczba iteracji
+iters = 61  # liczba iteracji
 save_every = 30
 
 
-length_wiggle_param = 0.1
-diameter_wiggle_param = 0.3
+length_wiggle_param = 1
+diameter_wiggle_param = 1
 
 
 qin = 10  # ilosć wpływającej krwi
@@ -46,14 +46,15 @@ ddrawconst = 3
 
 
 
-load = 1 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
+load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
 save_name = 'xd'
-load_name = 'xd'
+templatki_names = ['deslabiak','deavr','dehard','trslabiak','travr','trhard']
+load_name = templatki_names[5]
 
 #geo = "cylindrical"
 geo = "donut"
 #geo = "rect"
 #geo = "own"
 
-nettype = "de"
-#nettype = "tr"
+#nettype = "de"
+nettype = "tr"

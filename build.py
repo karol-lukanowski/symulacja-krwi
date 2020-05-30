@@ -61,17 +61,34 @@ elif load==1:
      in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in,
      in_nodes_ox, out_nodes_ox, oxresult, in_edges, reg_reg_edges, reg_something_edges, other_edges) = Sv.load(dirname+"/"+load_name)
     nkw = n ** 2
-'''
+
 else:
     from config import (F0, F1, z0, z1, F_mult, dt, c1, c2, mu, qin, presout, D, Dv, k, dth,
-                    F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox)
+                    F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, load_name)
     (G, boundary_edges, n, _, _, _, _, _, _, _, _, l, _, _, _, _, _, _, _,
      _, _, _, _, _, _, _, _, _, _, _, _, _,
-     _, _, _, _, reg_reg_edges, reg_something_edges, other_edges) = Sv.load('templatki/'+load_name)
+     _, _, _, _, _, _, _) = Sv.load('templatki/'+load_name)
 
-#    G, l, reg_reg_edges, reg_something_edges, other_edges = Sv.load_template('templatki/'+load_name)
+    if nettype == 'de':   
+        delfix = True
+    elif nettype == 'tr':
+        delfix = False
     in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del' : delfix})
+    reg_reg_edges, reg_something_edges, other_edges = create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in)
+    dirname = nettype + geo + "n" + str(n) + "w" + load_name + "dt" + str(dt) + "dtox" + str(dt_ox)
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname)
+    old_iters = 0
+    nkw = n**2
     in_nodes_ox = in_nodes
     out_nodes_ox = out_nodes
-    nkw = n**2
-'''
+
+    def create_vector():
+        oxresult = np.zeros(nkw)
+        for node in in_nodes_ox:
+            oxresult[node] = 1
+    #    for node in out_nodes_ox:
+    #        oxresult[node] = 1
+        return oxresult
+    oxresult = create_vector()
+    
