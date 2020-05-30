@@ -1,7 +1,7 @@
 import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
-from config import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, D, k, dth, in_nodes_ox, out_nodes_ox
+from build import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, D, k, dth, in_nodes_ox, out_nodes_ox
 
 
 

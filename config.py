@@ -1,19 +1,15 @@
 import numpy as np
-import os
 
-import triangular_net as Tr
-import delaunay as De
-from geometry import set_geometry, equidistant_geometry
 
 
 n = 201 # rozmiar siatki
 nkw = n ** 2
-iters = 1001  # liczba iteracji
+iters = 61  # liczba iteracji
 save_every = 30
 
 
-length_wiggle_param = 0.1
-diameter_wiggle_param = 0.3
+length_wiggle_param = 1
+diameter_wiggle_param = 1
 
 
 qin = 10  # ilosć wpływającej krwi
@@ -28,7 +24,7 @@ F1 = 1
 z0 = 0
 z1 = 1
 F_mult = 500
-dt = 1.1
+dt = 0.9
 
 
 D = 1 # współczynnik dyfuzji
@@ -50,29 +46,15 @@ ddrawconst = 3
 
 
 
+load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
+save_name = 'xd'
+templatki_names = ['deslabiak','deavr','dehard','trslabiak','travr','trhard']
+load_name = templatki_names[5]
 
-G, boundary_edges, nettype = De.Build_delaunay_net(n, diameter_wiggle_param=diameter_wiggle_param)
-#G, boundary_edges, nettype = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, diameter_wiggle_param = diameter_wiggle_param)
-
-
-
-geo = "cylindrical"
-#geo = "donut"
+#geo = "cylindrical"
+geo = "donut"
 #geo = "rect"
 #geo = "own"
 
-in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del': True})
-
-
-
-#in_nodes, out_nodes = equidistant_geometry(G, n, R = n//2.5, xrange = n, yrange = n, how_many = 200)
-#in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
-
-
-
-in_nodes_ox = in_nodes
-out_nodes_ox = out_nodes
-
-dirname = nettype + geo + "n" + str(n) + "lw" + str(length_wiggle_param) + "dw" + str(diameter_wiggle_param) + "dt" + str(dt) + "dtox" + str(dt_ox)
-if not os.path.isdir(dirname):
-    os.makedirs(dirname)
+#nettype = "de"
+nettype = "tr"

@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
-from config import G, n, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult, c2, dt, dt_ox, dth, boundary_edges, dirname
 import pressure as Pr
-import oxygen as Ox
 import vegf as Ve
+from build import (G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult,
+                   c2, dt, dt_ox, dth, boundary_edges, dirname, n)
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
@@ -20,7 +20,6 @@ def drawq(name, normalize=True, oxdraw=[]):
     """
     plt.figure(figsize=(20, 20))
     pos = nx.get_node_attributes(G, 'pos')
-
     if (normalize == False):
         qmax = 1
         drawconst = 1
@@ -31,10 +30,12 @@ def drawq(name, normalize=True, oxdraw=[]):
     edges = []
     qs = []
     for edge in G.edges(data='q'):
-            x, y, q = edge
-            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-                edges.append((x, y))
-                qs.append(q)
+        x, y, q = edge
+        
+        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:            
+            edges.append((x, y))
+            qs.append(q)
+
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(qs) / qmax)
 
     #### IN_NODES i OUT_NODES ####

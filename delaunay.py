@@ -90,7 +90,7 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         if l > 3 * length_avr:
             G.remove_edge(node, neigh)
 
-    return G, boundary_edges, "de"
+    return G, boundary_edges
 
 
 
