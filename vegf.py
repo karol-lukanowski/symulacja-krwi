@@ -2,7 +2,7 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
 
-from build import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, Dv, dth
+from build import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox
 
 
 
@@ -18,7 +18,7 @@ def create_vector(oxnow, oxresult):
     vresult = - vresult
     return vresult
 
-def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
+def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges, dt,dt_ox,D,Dv,k,dth):
 
     data, row, col = [], [], []
 
@@ -61,7 +61,7 @@ def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
 
     return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
 
-def d_update(F):
+def d_update(F, dt,dt_ox,D,Dv,k,dth):
     #zmiana średnicy pod względem siły F
     result = 0
     if (F > F0_ox):
@@ -75,12 +75,12 @@ def d_update(F):
 #    return (1-1/(1+np.exp(10*(F-0.5)))) * dt_ox
     
 
-def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
+def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges, dt,dt_ox,D,Dv,k,dth):
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F = F_mult_ox * np.abs(vnow[n1] - vnow[n2])
-            d += d_update(F)
+            d += d_update(F, dt,dt_ox,D,Dv,k,dth)
             if d > dth:
                 oxresult[n1] = 1
                 oxresult[n2] = 1
@@ -91,7 +91,7 @@ def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F=F_mult_ox*np.abs(vnow[n1] - vnow[n2])
-            d += d_update(F)
+            d += d_update(F, dt,dt_ox,D,Dv,k,dth)
             if d > dth:
                 oxresult[n1] = 1
                 oxresult[n2] = 1
@@ -101,7 +101,7 @@ def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             F = F_mult_ox * np.abs(vnow[n1] - vnow[n2])
-            d += d_update(F)
+            d += d_update(F, dt,dt_ox,D,Dv,k,dth)
             if d > dth:
                 oxresult[n1] = 1
                 oxresult[n2] = 1

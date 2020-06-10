@@ -4,7 +4,7 @@ import numpy as np
 
 n = 201 # rozmiar siatki
 nkw = n ** 2
-iters = 61  # liczba iteracji
+iters = 31  # liczba iteracji
 save_every = 30
 
 
@@ -38,7 +38,7 @@ F1_ox = 1
 z0_ox = 0
 z1_ox = 1
 F_mult_ox = 0.005
-dt_ox = 3
+dt_ox = 3.6
 
 
 qdrawconst = 5
@@ -46,15 +46,15 @@ ddrawconst = 3
 
 
 
-load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
+load = 1 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
 save_name = 'xd'
 templatki_names = ['deslabiak','deavr','dehard','trslabiak','travr','trhard']
-load_name = templatki_names[5]
+load_name = templatki_names[2]
 
 #geo = "cylindrical"
-geo = "donut"
+#geo = "donut"
 #geo = "rect"
 #geo = "own"
 
-#nettype = "de"
-nettype = "tr"
+nettype = "de"
+#nettype = "tr"

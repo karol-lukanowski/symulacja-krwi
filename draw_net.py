@@ -8,13 +8,13 @@ from matplotlib import gridspec
 import pressure as Pr
 import vegf as Ve
 from build import (G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult,
-                   c2, dt, dt_ox, dth, boundary_edges, dirname, n)
+                   c2, dt, dt_ox, dth, boundary_edges, n)
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
 
 
-def drawq(name, normalize=True, oxdraw=[]):
+def drawq(dirname,name, normalize=True,  oxdraw=[]):
     """
     rysowanie przepływów
     """
@@ -65,7 +65,7 @@ def drawq(name, normalize=True, oxdraw=[]):
 
 
 
-def drawd(name, normalize=True, oxdraw = []):
+def drawd(dirname,name, normalize=True,  oxdraw = []):
     """
     rysowanie srednic
     """
@@ -113,7 +113,7 @@ def drawd(name, normalize=True, oxdraw = []):
 
 
 
-def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
+def drawhist(dirname,name,  oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     """
     rysowanie histogramów
     """
@@ -224,7 +224,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.close()
 
 
-def drawblood(name, oxresult, data='q'):
+def drawblood(dirname,name, oxresult,  data='q'):
     """
     rysowanie krwi, data to q albo d
     """
