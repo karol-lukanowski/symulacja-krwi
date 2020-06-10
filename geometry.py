@@ -119,9 +119,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
             if r > R and r < R + 1:
                 out_nodes.append(node)
-            elif r > R + 1 and r < R + 3:
+            elif r > R + 1 and r < R + 6:
                 boundary_nodes_out.append(node)
-            elif r < R+1 and r > R - 2:
+            elif r < R+1 and r > R - 5:
                 boundary_nodes_in.append(node)    
             elif r < R+1:
                 reg_nodes.append(node)
@@ -144,9 +144,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
                 out_nodes.append(node)
             elif r > R_s and r < R_s + 1:
                 in_nodes.append(node)
-            elif r > R + 1 and r < R + 3:
+            elif r > R + 1 and r < R + 6:
                 boundary_nodes_out.append(node)
-            elif r < R+1 and r > R - 2:
+            elif r < R+1 and r > R - 5:
                 boundary_nodes_in.append(node)
             elif r < R+1 and r > R_s:
                 reg_nodes.append(node)
