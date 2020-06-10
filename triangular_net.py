@@ -143,4 +143,4 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
     add_edges(diameter_wiggle_param, l)
     find_edges_lengths()
     boundary_edges = find_boundary_edges()
-    return G, boundary_edges, "tr"
+    return G, boundary_edges
