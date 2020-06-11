@@ -12,12 +12,17 @@ from build import (G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, old_it
                    F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes_ox, out_nodes_ox, oxresult,
                    boundary_edges, reg_reg_edges, reg_something_edges, other_edges)
 
-Initial_everything = (G, in_nodes, out_nodes, reg_nodes, other_nodes,
-                   in_edges, boundary_nodes_out, boundary_nodes_in, in_nodes_ox, out_nodes_ox, oxresult,
-                   boundary_edges, reg_reg_edges, reg_something_edges, other_edges)
+
+
+oxcopy = oxresult.copy()
+regcopy = reg_reg_edges.copy()
+sthcopy = reg_something_edges.copy()
+otcopy = other_edges.copy()
+incopy = in_edges.copy()
+
 
 X = 12
-'''
+
 dt = 0.9
 dt_ox = 0.45
 
@@ -28,16 +33,18 @@ Dv = 0.5 # współczynnik dyfuzji VEGF
 k = 0.1 # stała reakcji
 dth = 3 # graniczna grubosć
 
-'''
+
 
 
 for i in range(X):
     # wyzerowanie sieci
-    Initial_everything = (G, in_nodes, out_nodes, reg_nodes, other_nodes,
-                       in_edges, boundary_nodes_out, boundary_nodes_in, in_nodes_ox, out_nodes_ox, oxresult,
-                       boundary_edges, reg_reg_edges, reg_something_edges, other_edges)
+    oxresult = oxcopy.copy()
+    reg_reg_edges = regcopy.copy()
+    reg_something_edges = sthcopy.copy()
+    other_edges = otcopy.copy()
+    in_edges = incopy.copy()
 # Zmienne dt_ox
-    '''
+    
     if i < 3:
         dt_ox *= 2 
         dirname = 'spis_powszechny/'+nettype + geo + "n" + str(n) + "dt" + str(dt) + "dtox" + str(dt_ox)
@@ -66,7 +73,7 @@ for i in range(X):
     
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
-    '''
+    
     presult = Pr.create_vector()
     
     for i in range(iters):
@@ -76,7 +83,7 @@ for i in range(X):
         oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges, dt,dt_ox,D,Dv,k,dth)
     
         pnow = Pr.solve_equation(pmatrix, presult)
-        print(pnow)
+        
         oxnow = Ox.solve_equation(oxmatrix, oxresult)
     
         vresult = Ve.create_vector(oxnow, oxresult)
