@@ -2,7 +2,7 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
 from collections import defaultdict
-from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, c2, in_nodes, out_nodes, qin, presout
+from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, in_nodes, out_nodes, qin, presout
 
 
 
@@ -84,17 +84,17 @@ def d_update(F):
 def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
-        F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F)
         reg_reg_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
-        F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F)
         reg_something_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
-        F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F)
         in_edges[i] = (n1, n2, d, l)
 

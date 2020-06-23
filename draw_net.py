@@ -19,6 +19,7 @@ def drawq(name, normalize=True, oxdraw=[]):
     rysowanie przepływów
     """
     plt.figure(figsize=(20, 20))
+    plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
     if (normalize == False):
         qmax = 1
@@ -70,6 +71,7 @@ def drawd(name, normalize=True, oxdraw = []):
     rysowanie srednic
     """
     plt.figure(figsize=(20, 20))
+    plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
     if (normalize == False):
@@ -229,6 +231,7 @@ def drawblood(name, oxresult, data='q'):
     rysowanie krwi, data to q albo d
     """
     plt.figure(figsize=(20, 20))
+    plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
     qmax = max([edge[2] for edge in G.edges(data=data)])

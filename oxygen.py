@@ -75,10 +75,11 @@ def d_update(F):
 
 
 def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
+    oxresult2 = oxresult.copy()
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
-        if (oxresult[n1] == 1 or oxresult[n2] == 1):
-            F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])
+        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
+            F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])/l
             d += d_update(F)
             if d > dth:
                 oxresult[n1] = 1
@@ -88,8 +89,8 @@ def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
 
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
-        if (oxresult[n1] == 1 or oxresult[n2] == 1):
-            F=F_mult_ox*np.abs(oxnow[n1] - oxnow[n2])
+        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
+            F=F_mult_ox*np.abs(oxnow[n1] - oxnow[n2])/l
             d += d_update(F)
             if d > dth:
                 oxresult[n1] = 1
@@ -98,8 +99,8 @@ def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
 
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
-        if (oxresult[n1] == 1 or oxresult[n2] == 1):
-            F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])
+        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
+            F = F_mult_ox * np.abs(oxnow[n1] - oxnow[n2])/l
             d += d_update(F)
             if d > dth:
                 oxresult[n1] = 1
