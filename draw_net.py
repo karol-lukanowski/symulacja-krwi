@@ -7,8 +7,9 @@ import numpy as np
 from matplotlib import gridspec
 import pressure as Pr
 import vegf as Ve
-from build import (G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult,
+from build import (G, in_nodes, out_nodes, F_mult_ox, F_mult,
                    c2, dt, dt_ox, dth, boundary_edges, dirname, n)
+from config import qdrawconst, ddrawconst
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 

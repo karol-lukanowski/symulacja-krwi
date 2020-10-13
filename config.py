@@ -2,7 +2,7 @@ import numpy as np
 
 
 
-n = 151 # rozmiar siatki
+n = 101 # rozmiar siatki
 nkw = n ** 2
 iters = 301  # liczba iteracji
 save_every = 30
@@ -39,6 +39,9 @@ z1_ox = 1
 F_mult_ox = 0.005
 dt_ox = 3.6
 
+qth_prun = 0.1
+dth_prun = 0.05
+z_prun = 0.1
 
 qdrawconst = 5
 ddrawconst = 3
@@ -49,8 +52,8 @@ load = 0 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytan
 templatki_names = ['deslabiak','deavr','dehard','trslabiak','travr','trhard']
 load_name = templatki_names[0] #load = 1 - nr folderu, load = 2 - nazwa templatki
 
-#geo = "cylindrical"
-geo = "donut"
+geo = "cylindrical"
+#geo = "donut"
 #geo = "rect"
 #geo = "own"
 

@@ -4,12 +4,14 @@ import pressure as Pr
 import oxygen as Ox
 import vegf as Ve
 import save as Sv
+import utils as Ut
+import pruning as Prun
 from build import (G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, old_iters,
-                   in_edges, save_every, boundary_nodes_out, boundary_nodes_in, dirname,
+                   in_edges, boundary_nodes_out, boundary_nodes_in, dirname,
                    n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
                    F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes_ox, out_nodes_ox, oxresult,
                    boundary_edges, reg_reg_edges, reg_something_edges, other_edges)
-
+from config import save_every
 
 
 presult = Pr.create_vector()
@@ -45,12 +47,15 @@ for i in range(iters):
         
 
 
-    reg_reg_edges, reg_something_edges, in_edges = Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
+    reg_reg_edges, reg_something_edges, in_edges = Prun.update_graph(G, pnow, reg_reg_edges, reg_something_edges, in_edges)
     reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
 #    oxresult = Ox.update_oxresult(reg_reg_edges, reg_something_edges, in_edges, oxresult)      #update oxresult gdy vegf jest wylaczony
 
 
  
+#G = Prun.final_pruning(G, reg_reg_edges, reg_something_edges, in_edges, pnow, presult, oxresult)
+#Dr.drawblood(name=f'pruning_q_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='q')
+
 
 Sv.save_all(dirname+'/save', reg_reg_edges, reg_something_edges, other_edges, oxresult,
             n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, iters+old_iters,

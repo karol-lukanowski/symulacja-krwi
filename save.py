@@ -83,11 +83,11 @@ def load(name):
              in_edges, reg_reg_edges, reg_something_edges, other_edges)
     
 def save_config(name, n, geo, nettype, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise):
+                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise, qth_prun, dth_prun, z_prun):
     consts = [n, geo, nettype, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise]
+                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise, qth_prun, dth_prun, z_prun]
     constnames = ['n', 'geo', 'nettype', 'F0', 'F1', 'z0', 'z1', 'F_mult', 'dt', 'c1', 'c2', 'l', 'mu', 'qin', 'presout', 'D', 'Dv', 'k', 'dth',
-                        'F0_ox', 'F1_ox', 'z0_ox', 'z1_ox', 'F_mult_ox', 'dt_ox', 'length_wiggle_param', 'noise']
+                        'F0_ox', 'F1_ox', 'z0_ox', 'z1_ox', 'F_mult_ox', 'dt_ox', 'length_wiggle_param', 'noise', 'qth_prun', 'dth_prun', 'z_prun']
     file1 = open(name+".txt","w")
     for i in range(len(consts)):
         file1.write(constnames[i])
