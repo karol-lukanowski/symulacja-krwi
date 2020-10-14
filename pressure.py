@@ -2,7 +2,7 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
 from collections import defaultdict
-from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, in_nodes, out_nodes, qin, presout
+from build import nkw, F0, F1, z0, z1, F_mult, c1, in_nodes, out_nodes, qin, presout
 
 
 
@@ -67,7 +67,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
 
     return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
 
-def d_update(F):
+def d_update(F, dt):
     #zmiana średnicy pod względem siły F
     result = 0
     if (F > F0):
@@ -81,21 +81,21 @@ def d_update(F):
 #    return (1-1/(1+np.exp(10*(F-0.5))))*dt
 
 
-def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
+def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges, dt):
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        d += d_update(F)
+        d += d_update(F, dt)
         reg_reg_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        d += d_update(F)
+        d += d_update(F, dt)
         reg_something_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        d += d_update(F)
+        d += d_update(F, dt)
         in_edges[i] = (n1, n2, d, l)
 
     return reg_reg_edges, reg_something_edges, in_edges

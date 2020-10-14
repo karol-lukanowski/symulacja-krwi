@@ -20,13 +20,13 @@ for i in range(iters):
     print(f'Iter {i + 1}/{iters}')
 
     pmatrix = Pr.update_matrix(reg_reg_edges, reg_something_edges, in_edges)
-    oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges)
+    oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges, k, D)
 
     pnow = Pr.solve_equation(pmatrix, presult)
     oxnow = Ox.solve_equation(oxmatrix, oxresult)
 
     vresult = Ve.create_vector(oxnow, oxresult)
-    vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges)
+    vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges, Dv)
     vnow = Ve.solve_equation(vmatrix, vresult)
     for node in other_nodes:
         vnow[node] = 0
@@ -45,8 +45,8 @@ for i in range(iters):
         
 
 
-    reg_reg_edges, reg_something_edges, in_edges = Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
-    reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
+    reg_reg_edges, reg_something_edges, in_edges = Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges, dt)
+    reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges, dt_ox, dth)
 #    oxresult = Ox.update_oxresult(reg_reg_edges, reg_something_edges, in_edges, oxresult)      #update oxresult gdy vegf jest wylaczony
 
 
