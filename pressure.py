@@ -2,7 +2,7 @@ import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
 from collections import defaultdict
-from build import nkw, F0, F1, z0, z1, F_mult, c1, c2, in_nodes, out_nodes, qin, presout
+from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, in_nodes, out_nodes, qin, presout
 
 
 
@@ -17,7 +17,6 @@ def create_vector():
         presult[node] = -qin
     for node in out_nodes:
         presult[node] = presout
-#    print(list(presult))
     return presult
 
 def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
@@ -68,7 +67,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
 
     return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
 
-def d_update(F,dt):
+def d_update(F):
     #zmiana średnicy pod względem siły F
     result = 0
     if (F > F0):
@@ -82,21 +81,21 @@ def d_update(F,dt):
 #    return (1-1/(1+np.exp(10*(F-0.5))))*dt
 
 
-def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges,dt):
+def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges):
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
-        F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        d += d_update(F,dt)
+        F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        d += d_update(F)
         reg_reg_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
-        F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        d += d_update(F,dt)
+        F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        d += d_update(F)
         reg_something_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
-        F = F_mult * c1 * c2 * d * np.abs(pnow[n1] - pnow[n2]) / l
-        d += d_update(F,dt)
+        F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+        d += d_update(F)
         in_edges[i] = (n1, n2, d, l)
 
     return reg_reg_edges, reg_something_edges, in_edges
@@ -104,9 +103,6 @@ def update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges,dt):
 def update_network(G1,reg_reg_edges, reg_something_edges, pnow):
     Q_in = 0
     Q_out = 0
-#    print('pnow',pnow)
-#    print(reg_reg_edges)
-#    print(reg_something_edges)
     for n1, n2, d, l in reg_reg_edges:
         G1[n1][n2]['d']= d
         q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
@@ -125,5 +121,4 @@ def update_network(G1,reg_reg_edges, reg_something_edges, pnow):
             Q_out += q
     
     print('Q_in =', Q_in, 'Q_out =', Q_out)
-    #print(nx.get_edge_attributes(G1, 'q'))
     return G1

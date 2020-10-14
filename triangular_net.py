@@ -3,12 +3,13 @@
 
 import numpy as np
 import networkx as nx
+import utils as Ut
 
 """
 Funkcja budująca siatkę trójkątną o wymiarach n x n węzłów, jako graf
 """
    
-def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_param = 0):
+def Build_triangular_net(n, l = 1, length_wiggle_param = 0, noise = ["uniform", 1, 1]):
     G = nx.Graph()    
     
     # sąsiedztwo: pierwsza i ostatnia kolumna siatki ma tylko po jednym połączeniu,
@@ -120,8 +121,13 @@ def Build_triangular_net(n, l = 1, length_wiggle_param = 0, diameter_wiggle_para
         for node in G.nodes:
             for ind in G.nodes[node]["neigh"]:
                 if (ind>node):
-                    d0 = np.random.rand() * diameter_wiggle_param + 1
-                    G.add_edge(node,ind, d=d0,q=0, length=l)
+                    if noise[0] == "uniform":
+                        d0 = np.random.rand() * noise[2] + noise[1]
+                    elif noise[0] == "gaussian":
+                        d0 = Ut.PosGauss(noise[1], noise[2])
+                    elif noise[0] == "lognormal":
+                        d0 = np.random.lognormal(noise[1], noise[2])
+                G.add_edge(node,ind, d=d0,q=0, length=l)
     def find_edges_lengths():
         for edge in G.edges():
             node, neigh = edge

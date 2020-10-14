@@ -4,12 +4,13 @@ import numpy as np
 
 n = 201 # rozmiar siatki
 nkw = n ** 2
-iters = 31  # liczba iteracji
-save_every = 30
+iters = 501  # liczba iteracji
+save_every = 50
 
+#noise = ["uniform", 1, 1] #jednorodny rozkład srednic, srednica początkowa, diameter_wiggle_param
+noise = ["gaussian", 1, 0.3] #gaussowski rozkład srednic, mu, sigma
+#noise = ["lognormal", 1, 0.3] #log-normalny rozkład srednic, mu, sigma
 
-length_wiggle_param = 1
-diameter_wiggle_param = 1
 
 
 qin = 10  # ilosć wpływającej krwi
@@ -38,23 +39,22 @@ F1_ox = 1
 z0_ox = 0
 z1_ox = 1
 F_mult_ox = 0.005
-dt_ox = 3.6
+dt_ox = 3
 
 
 qdrawconst = 5
 ddrawconst = 3
 
-
-
-load = 1 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
-save_name = 'xd'
+load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
 templatki_names = ['deslabiak','deavr','dehard','trslabiak','travr','trhard']
-load_name = templatki_names[2]
+load_name = 'donut201-gauss' #load = 1 - nr folderu, load = 2 - nazwa templatki
 
 #geo = "cylindrical"
-#geo = "donut"
+geo = "donut"
 #geo = "rect"
 #geo = "own"
 
 nettype = "de"
 #nettype = "tr"
+
+length_wiggle_param = 1

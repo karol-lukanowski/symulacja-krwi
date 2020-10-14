@@ -119,11 +119,11 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
             if r > R and r < R + 1:
                 out_nodes.append(node)
-            elif r > R + 1 and r < R + 6:
+            if r > R + 1 and r < R + 3:
                 boundary_nodes_out.append(node)
-            elif r < R+1 and r > R - 5:
+            if r < R+1 and r > R - 2:
                 boundary_nodes_in.append(node)    
-            elif r < R+1:
+            if r < R+1:
                 reg_nodes.append(node)
 
         return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
@@ -142,14 +142,15 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
             r = np.sqrt((pos[0] - x0) ** 2 + (pos[1] - y0) ** 2)
             if r > R and r < R + 1:
                 out_nodes.append(node)
-            elif r > R_s and r < R_s + 1:
+            if r > R_s and r < R_s + 1:
                 in_nodes.append(node)
-            elif r > R + 1 and r < R + 6:
+            if r > R + 1 and r < R + 3:
                 boundary_nodes_out.append(node)
-            elif r < R+1 and r > R - 5:
+            if r < R+1 and r > R - 2:
                 boundary_nodes_in.append(node)
-            elif r < R+1 and r > R_s:
+            if r < R+1 and r > R_s:
                 reg_nodes.append(node)
+            # sprawdzić wszystkie if/elif
             
         return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
 

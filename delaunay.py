@@ -1,8 +1,9 @@
 import networkx as nx
 import numpy as np
 import scipy.spatial
+import utils as Ut
 
-def Build_delaunay_net(n, diameter_wiggle_param=1):
+def Build_delaunay_net(n, noise = ["uniform", 1, 1]):
     nkw = n**2
 
     points = np.random.uniform(0, n, (nkw, 2))
@@ -78,7 +79,12 @@ def Build_delaunay_net(n, diameter_wiggle_param=1):
         node, neigh = edge
         G[node][neigh]['length'] = l
         length_avr += l
-        G[node][neigh]['d'] = np.random.rand() * diameter_wiggle_param + 1
+        if noise[0] == "uniform":
+            G[node][neigh]['d'] = np.random.rand() * noise[2] + noise[1]
+        elif noise[0] == "gaussian":
+            G[node][neigh]['d'] = Ut.PosGauss(noise[1], noise[2])
+        elif noise[0] == "lognormal":
+            G[node][neigh]['d'] = np.random.lognormal(noise[1], noise[2])
         G[node][neigh]['q'] = 0
 
     length_avr /= len(G.edges())

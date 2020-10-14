@@ -5,9 +5,9 @@ import pressure as Pr
 import oxygen as Ox
 import vegf as Ve
 import save as Sv
-from config import nettype, geo
+from config import save_every
 from build import (G, in_nodes, out_nodes, reg_nodes, other_nodes, iters, old_iters,
-                   in_edges, save_every, boundary_nodes_out, boundary_nodes_in, dirname, save_name,
+                   in_edges, boundary_nodes_out, boundary_nodes_in, dirname,
                    n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
                    F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes_ox, out_nodes_ox, oxresult,
                    boundary_edges, reg_reg_edges, reg_something_edges, other_edges)
@@ -21,19 +21,8 @@ otcopy = other_edges.copy()
 incopy = in_edges.copy()
 
 
-X = 12
-
-dt = 0.9
-dt_ox = 0.45
-
-
-D = 1 # współczynnik dyfuzji
-Dv = 0.5 # współczynnik dyfuzji VEGF
-
-k = 0.1 # stała reakcji
-dth = 3 # graniczna grubosć
-
-
+X = 2
+k = 0.1
 
 
 for i in range(X):
@@ -43,30 +32,7 @@ for i in range(X):
     reg_something_edges = sthcopy.copy()
     other_edges = otcopy.copy()
     in_edges = incopy.copy()
-# Zmienne dt_ox
-    
-    if i < 3:
-        dt_ox *= 2 
-        dirname = 'spis_powszechny/'+nettype + geo + "n" + str(n) + "dt" + str(dt) + "dtox" + str(dt_ox)
-# Zmienne Dv, dt_ox już ustalone
-    elif i < 6:
-        dt_ox = 3
-        Dv *= 2
-        dirname = 'spis_powszechny/'+nettype + geo + "n" + str(n) + "D" + str(D)+ "Dv" + str(Dv)
-
-# Zmienne k, Dv już ustalone
-
-    elif i < 9:
-        Dv = 1
-        k += 1
-        dirname = 'spis_powszechny/'+nettype + geo + "n" + str(n) + "k" + str(k)
-
-# Zmienne dth, k już ustalone
-
-    elif i < 12:
-        k = 0.1
-        dth += 5
-        dirname = 'spis_powszechny/'+nettype + geo + "n" + str(n) + "dth" + str(dth)
+    dirname = 'spis_powszechny/'+"k"+str(k)
     
     if not os.path.isdir('spis_powszechny'):
         os.makedirs('spis_powszechny')
@@ -80,14 +46,14 @@ for i in range(X):
         print(f'Iter {i + 1}/{iters}')
     
         pmatrix = Pr.update_matrix(reg_reg_edges, reg_something_edges, in_edges)
-        oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges, dt,dt_ox,D,Dv,k,dth)
+        oxmatrix = Ox.update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges)
     
         pnow = Pr.solve_equation(pmatrix, presult)
         
         oxnow = Ox.solve_equation(oxmatrix, oxresult)
     
         vresult = Ve.create_vector(oxnow, oxresult)
-        vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges, dt,dt_ox,D,Dv,k,dth)
+        vmatrix = Ve.update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges)
         vnow = Ve.solve_equation(vmatrix, vresult)
         for node in other_nodes:
             vnow[node] = 0
@@ -95,25 +61,27 @@ for i in range(X):
         if i%save_every == 0:
             G = Pr.update_network(G, reg_reg_edges, reg_something_edges, pnow)
             
-    #        Dr.drawhist(dirname,name = f'{i//save_every:04d}.png',  oxnow = oxnow, oxresult = oxresult, vnow = vnow)
-            Dr.drawd(dirname,name = f'd{(i+old_iters)//save_every:04d}.png',  oxdraw = [])
-            Dr.drawq(dirname,name = f'q{(i+old_iters)//save_every:04d}.png',  oxdraw = [])
-            Dr.drawq(dirname,name=f'veq{i // save_every:04d}.png',  oxdraw=vnow/np.max(vnow))
-            Dr.drawq(dirname,name=f'oxq{i // save_every:04d}.png',  oxdraw=oxresult)
-            Dr.drawq(dirname,name=f'veq{(i+old_iters) // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult)
-            Dr.drawblood(dirname,name=f'q_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='q')
-            Dr.drawblood(dirname,name=f'd_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='d')
+    #        Dr.drawhist(name = f'{i//save_every:04d}.png',  oxnow = oxnow, oxresult = oxresult, vnow = vnow, dirname = dirname)
+#            Dr.drawd(name = f'd{(i+old_iters)//save_every:04d}.png',  oxdraw = [], dirname = dirname)
+#            Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png',  oxdraw = [], dirname = dirname)
+#            Dr.drawq(name=f'veq{i+old_iters // save_every:04d}.png',  oxdraw=vnow/np.max(vnow), dirname = dirname)
+#            Dr.drawq(name=f'oxq{i+old_iters // save_every:04d}.png',  oxdraw=oxresult, dirname = dirname)
+            Dr.drawq(name=f'veq{(i+old_iters) // save_every:04d}.png', oxdraw=vnow / np.max(vnow)+oxresult, dirname = dirname)
+            Dr.drawblood(name=f'q_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='q', dirname = dirname)
+ #           Dr.drawblood(name=f'd_blood{(i+old_iters) // save_every:04d}.png', oxresult=oxresult, data='d', dirname = dirname)
             
     
     
-        reg_reg_edges, reg_something_edges, in_edges = Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges, dt)
-        reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges, dt,dt_ox,D,Dv,k,dth)
+        reg_reg_edges, reg_something_edges, in_edges = Pr.update_graph(pnow, reg_reg_edges, reg_something_edges, in_edges)
+        reg_reg_edges, reg_something_edges, in_edges, oxresult=Ve.update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges)
     #    oxresult = Ox.update_oxresult(reg_reg_edges, reg_something_edges, in_edges, oxresult)      #update oxresult gdy vegf jest wylaczony
     
     
      
     
-    Sv.save_all(dirname+'/'+save_name, reg_reg_edges, reg_something_edges, other_edges, oxresult,
+    Sv.save_all(dirname+'/save', reg_reg_edges, reg_something_edges, other_edges, oxresult,
                 n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth, iters+old_iters,
                 F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes, out_nodes, reg_nodes, other_nodes,
                 in_nodes_ox, out_nodes_ox,in_edges,G, boundary_nodes_out, boundary_nodes_in, boundary_edges)
+    
+    k = 10 * k

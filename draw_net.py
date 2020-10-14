@@ -7,18 +7,20 @@ import numpy as np
 from matplotlib import gridspec
 import pressure as Pr
 import vegf as Ve
-from build import (G, qdrawconst, ddrawconst, in_nodes, out_nodes, F_mult_ox, F_mult,
-                   c2, dt, dt_ox, dth, boundary_edges, n)
+from build import (G, in_nodes, out_nodes, F_mult_ox, F_mult,
+                   c2, dt, dt_ox, dth, boundary_edges, dirname, n)
+from config import qdrawconst, ddrawconst
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
 
 
-def drawq(dirname,name, normalize=True,  oxdraw=[]):
+def drawq(name, normalize=True, oxdraw=[], dirname = dirname):
     """
     rysowanie przepływów
     """
     plt.figure(figsize=(20, 20))
+    plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
     if (normalize == False):
         qmax = 1
@@ -65,11 +67,12 @@ def drawq(dirname,name, normalize=True,  oxdraw=[]):
 
 
 
-def drawd(dirname,name, normalize=True,  oxdraw = []):
+def drawd(name, normalize=True, oxdraw = [], dirname = dirname):
     """
     rysowanie srednic
     """
     plt.figure(figsize=(20, 20))
+    plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
     if (normalize == False):
@@ -113,7 +116,7 @@ def drawd(dirname,name, normalize=True,  oxdraw = []):
 
 
 
-def drawhist(dirname,name,  oxnow=[], oxresult=[], vnow = [], oxdraw = []):
+def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = [], dirname = dirname):
     """
     rysowanie histogramów
     """
@@ -224,11 +227,12 @@ def drawhist(dirname,name,  oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.close()
 
 
-def drawblood(dirname,name, oxresult,  data='q'):
+def drawblood(name, oxresult, data='q', dirname = dirname):
     """
     rysowanie krwi, data to q albo d
     """
     plt.figure(figsize=(20, 20))
+    plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
     qmax = max([edge[2] for edge in G.edges(data=data)])
