@@ -133,7 +133,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
         q=G[n1][n2]['q']
         d=G[n1][n2]['d']
         F=F_mult*c2*q/d**3 * dt
-        shear=Pr.d_update(F)
+        shear=F
         F_ox=F_mult_ox*np.abs(vnow[n1] - vnow[n2]) * dt_ox
         shearox=Ve.d_update(F_ox)
         if d>dmax:
