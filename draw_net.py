@@ -55,7 +55,7 @@ def drawq(name, normalize=True, oxdraw=[]):
 
 
     #### OXYGEN NODES ####
-    nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')
+    #nx.draw_networkx_nodes(G, pos, node_size = 25, node_color = oxdraw, cmap='Reds')
 
     #nx.draw(G, pos, with_labels=True)
     #plt.show()
@@ -82,6 +82,9 @@ def drawd(name, normalize=True, oxdraw = []):
         dmax = max([edge[2] for edge in G.edges(data='d')])
         drawconst = ddrawconst
 
+    color = ['white', 'lightgrey', 'darkgrey', 'grey', 'dimgrey', 'black', 'black','black','black','black','black']
+    colors = []
+
     edges = []
     ds = []
     for edge in G.edges(data='d'):
@@ -89,7 +92,9 @@ def drawd(name, normalize=True, oxdraw = []):
             if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
                 ds.append(d)
-    nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(ds) / dmax)
+                colors.append(color[int(6*edge[2]/dmax)])
+                
+    nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color = colors, width=drawconst * np.array(ds) / dmax)
 
     #### IN_NODES i OUT_NODES ####
     x_in, y_in = [], []
@@ -105,7 +110,7 @@ def drawd(name, normalize=True, oxdraw = []):
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
 
     #### OXYGEN NODES ####
-    nx.draw_networkx_nodes(G, pos, node_size=25 * oxdraw, node_color=oxdraw, cmap='Reds')
+    #nx.draw_networkx_nodes(G, pos, node_size=25 * oxdraw, node_color=oxdraw, cmap='Reds')
 
 
     plt.axis('equal')
@@ -129,6 +134,15 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     shearmax=0.001
     shearmaxox=0.001
     qmax = max([edge[2] for edge in G.edges(data='q')])
+    
+    for n1, n2 in G.edges():
+        q=G[n1][n2]['q']
+        d=G[n1][n2]['d']
+        F=F_mult*c2*q/d**3 * dt
+        shear=F
+        if shear>shearmax:
+            shearmax=shear 
+            
     for n1, n2 in G.edges():
         q=G[n1][n2]['q']
         d=G[n1][n2]['d']
@@ -142,12 +156,18 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
             shearmax=shear
         if shearox>shearmaxox:
             shearmaxox=shearox
+        """
         qhist[int(6*q/qmax)].append(q)
         dhist[int(6*q/qmax)].append(d)
         shearhist[int(6*q/qmax)].append(shear)
         shearhistox[int(6*q/qmax)].append(shearox)
+        """
+        qhist[int(6*shear/shearmax)].append(q)
+        dhist[int(6*shear/shearmax)].append(d)
+        shearhist[int(6*shear/shearmax)].append(shear)
+        shearhistox[int(6*shear/shearmax)].append(shearox)        
     
-    color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm', 'y', 'k',]
+    color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'k', 'k', 'k', 'k']
     for edge in G.edges(data="q"):
         x, y, q = edge
         if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
@@ -183,7 +203,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
     nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=qdrawconst * np.array(qs) / qmax)
-    nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
+    #nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
     plt.axis('equal')
     
     plt.subplot(spec[4]).set_title('Diameter')

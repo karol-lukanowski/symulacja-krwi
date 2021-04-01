@@ -101,6 +101,7 @@ def update_graph(G, pnow, reg_reg_edges, reg_something_edges, in_edges):
     return reg_reg_edges, reg_something_edges, in_edges
 
 
+
 def update_network(G1,reg_reg_edges, reg_something_edges, pnow):
     Q_in = 0
     Q_out = 0
