@@ -10,7 +10,7 @@ from config import load, iters, geo, nettype, n
 
 if load == 0:
     from config import (F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise, Fth_prun, dth_prun, z_prun)
+                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise)
     nkw = n ** 2
     if nettype == 'de':   
         G, boundary_edges = De.Build_delaunay_net(n, noise = noise)
@@ -56,7 +56,7 @@ if load == 0:
         F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes, out_nodes, reg_nodes, other_nodes,
         in_nodes_ox, out_nodes_ox,in_edges,G2, boundary_nodes_out, boundary_nodes_in, boundary_edges)
     Sv.save_config(dirname+'/'+'config', n, geo, nettype, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
-                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise, Fth_prun, dth_prun, z_prun)
+                        F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, length_wiggle_param, noise)
 
 elif load==1:
     from config import nettype, geo, load_name
