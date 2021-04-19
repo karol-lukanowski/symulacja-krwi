@@ -83,7 +83,7 @@ def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
             d += d_update(F)
             if d > dth:
                 oxresult[n1] = 1
-                oxresult[n2] =1
+                oxresult[n2] = 1
         reg_reg_edges[i] = (n1, n2, d, l)
 
 
