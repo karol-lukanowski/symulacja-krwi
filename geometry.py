@@ -144,9 +144,9 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
                 out_nodes.append(node)
             if r > R_s and r < R_s + 1:
                 in_nodes.append(node)
-            if r > R + 1 and r < R + 3:
+            if r > R + 1 and r < R + 5:
                 boundary_nodes_out.append(node)
-            if r < R+1 and r > R - 2:
+            if r < R+1 and r > R - 3:
                 boundary_nodes_in.append(node)
             elif r < R+1 and r > R_s:
                 reg_nodes.append(node)

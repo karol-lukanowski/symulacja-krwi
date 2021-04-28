@@ -69,6 +69,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
+    '''
     result = 0
     if (F > F0):
         if (F < F1):
@@ -78,25 +79,59 @@ def d_update(F):
     else:
         result = z0
     return result * dt
-#    return (1-1/(1+np.exp(10*(F-0.5))))*dt
+    '''
+    return (z0-1/(1+np.exp(F1*(F-F0)))) * dt
 
-
-def update_graph(G, pnow, reg_reg_edges, reg_something_edges, in_edges):
+def update_graph(G, pnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F)
+        if d <= 0:
+            d = 0.01
         reg_reg_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F)
+        if d <= 0:
+            d = 0.01
         reg_something_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F)
+        if d <= 0:
+            d = 0.01
         in_edges[i] = (n1, n2, d, l)
+
+    return reg_reg_edges, reg_something_edges, in_edges
+
+def update_graph2(G, pnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
+    for i,e in enumerate(reg_reg_edges):
+        n1, n2, d, l = e
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
+            F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+            d += d_update(F)
+            if d <= 0:
+                d = 0.01
+            reg_reg_edges[i] = (n1, n2, d, l)
+    for i,e in enumerate(reg_something_edges):
+        n1, n2, d, l = e
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
+            F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+            d += d_update(F)
+            if d <= 0:
+                d = 0.01
+            reg_something_edges[i] = (n1, n2, d, l)
+    for i,e in enumerate(in_edges):
+        n1, n2, d, l = e
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
+            F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+            d += d_update(F)
+            if d <= 0:
+                d = 0.01
+            in_edges[i] = (n1, n2, d, l)
 
     return reg_reg_edges, reg_something_edges, in_edges
 

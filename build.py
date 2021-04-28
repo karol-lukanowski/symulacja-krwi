@@ -60,8 +60,8 @@ if load == 0:
 
 elif load==1:
     from config import nettype, geo, load_name
-    dirname = nettype + geo + str(n)+"/"+load_name
-#    dirname = "templatki"
+    #dirname = nettype + geo + str(n)+"/"+load_name
+    dirname = load_name
     (G, boundary_edges, n, F0, F1, z0, z1, F_mult, dt, c1, c2, l, mu, qin, presout, D, Dv, k, dth,
      F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, old_iters,
      in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in,

@@ -13,7 +13,8 @@ def solve_equation(matrix, vresult):
 
 
 def create_vector(oxnow, oxresult):
-    vresult = 1/(1+np.exp(10*(oxnow-0.5)))
+    vresult = 1/(1+np.exp(15*(oxnow-0.3)))
+    #vresult = 1
     vresult = np.where(oxresult == 1, 0, vresult)
     vresult = - vresult
     return vresult
@@ -63,6 +64,7 @@ def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
+    '''
     result = 0
     if (F > F0_ox):
         if (F < F1_ox):
@@ -72,7 +74,8 @@ def d_update(F):
     else:
         result = z0_ox
     return result * dt_ox
-#    return (1-1/(1+np.exp(10*(F-0.5)))) * dt_ox
+    '''
+    return (z0_ox-1/(1+np.exp(F1_ox*(F-F0_ox)))) * dt_ox
     
 
 def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
