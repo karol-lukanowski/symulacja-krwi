@@ -91,6 +91,56 @@ def strahlerOrder(G):
         G = performStrahlerAlghorithm(node, G)
     return G
 
+def findMaxStrahlerNumber(G):
+    strahler = nx.get_node_attributes(G, 'strahler')
+    max_value = max(strahler.values())
+    print("max strahler", max_value)
+    return max_value
+
+def setVisitedAttribute(G):
+    for node in G.nodes:
+        G.nodes[node]["visited"] = 0
+    return G
+
+def performStrahlerCounting(node, G, hist):
+    # print(node)
+    degree = G.out_degree(node)
+    strahler = G.nodes[node]["strahler"]
+    if G.nodes[node]['visited'] == 1:
+        return G, hist
+    G.nodes[node]['visited'] = 1
+
+    if degree == 0:
+        hist[strahler] += 1
+        return G, hist
+
+    elif degree >= 2:
+        hist[strahler] += 1
+        
+    for subNode in G.successors(node):
+        G, hist = performStrahlerCounting(subNode, G, hist)
+    return G, hist
+    
+def countStrahlerNumbers(G, dirname):
+    startingNodes = getStartingNodes(G)
+    maxStrahler = findMaxStrahlerNumber(G)
+    G = setVisitedAttribute(G)
+    hist = np.zeros(maxStrahler+1)
+
+    for node in startingNodes:
+        G, hist = performStrahlerCounting(node, G, hist)
+    
+
+    plt.plot(hist, 'bo')
+    plt.axis('on')
+    plt.yscale('log')
+    plt.xlim(0.8, maxStrahler+0.5)
+    plt.xlabel('Strahler number')
+    plt.ylabel('Count')
+    plt.savefig(dirname + "/strahler_histogram2.png")
+    plt.close()
+
+
 def testStrahler():
 
     G = createTestTree()
@@ -102,6 +152,7 @@ def testStrahler():
     nx.draw_networkx_labels(G, pos, labels= strahler)
     # nx.draw_networkx_labels(G, pos, labels= {1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,11:11,12:12,13:13,14:14,15:15,16:16,17:17,18:18,19:19})
     plt.show()
+
 def plotStrahlerHistogram(DiG, dirname):
     strahler = nx.get_node_attributes(DiG, 'strahler')
 
@@ -114,10 +165,13 @@ def plotStrahlerHistogram(DiG, dirname):
     fig, ax = plt.subplots()
     _ = ax.hist(S, np.arange(left_of_first_bin, right_of_last_bin + d, d))
     ax.set_xticks(np.arange(1,max(S)+1,1))
+    plt.yscale('log')
     
     plt.xlabel('Strahler number')
     plt.ylabel('Count')
     plt.savefig(dirname + "/strahler_histogram.png")
+    # plt.show()
+    plt.close()
 
 def plotStrahlerGraph(DiG, dirname):
     pos = nx.get_node_attributes(DiG, 'pos')
@@ -128,6 +182,7 @@ def plotStrahlerGraph(DiG, dirname):
     nx.draw_networkx_labels(DiG, pos, labels= strahler)
     plt.savefig(dirname + "/strahler_graph.png")
     # plt.show()
+    plt.close()
 
 
 def getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname):
@@ -137,7 +192,8 @@ def getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname):
     plotStrahlerHistogram(DiG, dirname)
     
     plotStrahlerGraph(DiG, dirname)
-
+    
+    countStrahlerNumbers(DiG, dirname)
 # NETWORKTREE 
 
 def setTypes(G, DiG, oxresult):

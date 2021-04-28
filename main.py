@@ -59,7 +59,7 @@ for i in range(iters):
     oxtab.append(np.average(oxnow ** 2))
     vegftab.append(np.average(vnow ** 2))
 
-Dr.plot_params(prestab, oxtab, vegftab)
+# Dr.plot_params(prestab, oxtab, vegftab)
 
 
 Sv.save_all(dirname+'/save', reg_reg_edges, reg_something_edges, other_edges, oxresult,
@@ -67,10 +67,10 @@ Sv.save_all(dirname+'/save', reg_reg_edges, reg_something_edges, other_edges, ox
             F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, in_nodes, out_nodes, reg_nodes, other_nodes,
             in_nodes_ox, out_nodes_ox,in_edges,G, boundary_nodes_out, boundary_nodes_in, boundary_edges)
 
-An.getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname)
 
 
 Prun.pruning(G, reg_reg_edges, reg_something_edges, in_edges, pnow, presult, oxresult)
 
+An.getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname)
 
 
