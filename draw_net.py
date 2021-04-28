@@ -354,7 +354,7 @@ def plot_params(prestab, oxtab, vegftab):
     plt.ylabel(r'$\Delta p$')
     
     plt.subplot(spec[1]).set_title('Oxygen')
-    x = np.linspace(0, len(prestab))
+    x = np.linspace(0, len(prestab), len(prestab))
     plt.plot(x, oxtab)
     plt.xlabel('iterations')
     plt.ylabel(r'average $c_{ox}^2$')
