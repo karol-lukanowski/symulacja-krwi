@@ -10,6 +10,7 @@ import vegf as Ve
 from build import (G, in_nodes, out_nodes, F_mult_ox, F_mult,
                    c2, dt, dt_ox, dth, boundary_edges, dirname, n)
 from config import qdrawconst, ddrawconst
+from utils import mu_d
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
@@ -55,8 +56,8 @@ def drawq(name, normalize=True, oxdraw=[]):
 
 
     #### OXYGEN NODES ####
-    #nx.draw_networkx_nodes(G, pos, node_size = 25, node_color = oxdraw, cmap='Reds')
-
+    nx.draw_networkx_nodes(G, pos, node_size = 15, node_color = oxdraw, cmap='plasma', vmax = 10000)
+    
     #nx.draw(G, pos, with_labels=True)
     #plt.show()
 
@@ -121,7 +122,7 @@ def drawd(name, normalize=True, oxdraw = []):
 
 
 
-def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
+def drawhist(name, snow, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     """
     rysowanie histogramów
     """
@@ -142,7 +143,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     for n1, n2 in G.edges():
         q=G[n1][n2]['q']
         d=G[n1][n2]['d']
-        F=F_mult*c2*q/d**3
+        F=F_mult*c2 * mu_d(d) *q/d**3
         shear=F
         if shear>shearmax:
             shearmax=shear       
@@ -150,7 +151,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     for n1, n2 in G.edges():
         q=G[n1][n2]['q']
         d=G[n1][n2]['d']
-        F=F_mult*c2*q/d**3
+        F=F_mult*c2* mu_d(d) *q/d**3
         shear=F
         dshear = Pr.d_update(F)
         if (oxresult[n1] == 1 or oxresult[n2] == 1):    
@@ -273,23 +274,24 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.yscale("log")
     
     plt.subplot(spec[11]).set_title('VEGF growth')
-    cindex=0
-    plt.xlim((0,1.1*dvegfmax))
-    for hist in dvegfhist:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
+    #cindex=0
+    #plt.xlim((0,1.1*dvegfmax))
+    #for hist in dvegfhist:
+    #    if len(hist)>1:
+    #        plt.hist(hist, bins=50, color=color[cindex])
+    #    cindex+=1
     plt.yscale("log")
+    plt.hist(snow, bins=50, color=color[cindex])
     
     plt.savefig(dirname + "/" + name)
     plt.close()
 
 
-def drawblood(name, oxresult, data='q'):
+def drawblood(name, oxresult, oxdraw, data='q'):
     """
     rysowanie krwi, data to q albo d
     """
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(40, 40), dpi = 200)
     plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
@@ -310,7 +312,8 @@ def drawblood(name, oxresult, data='q'):
             qs[i] = 0
 
     nx.draw_networkx_edges(G, pos, edgelist=edges, width=qdrawconst * np.array(qs) / qmax, edge_color='r')
-
+    nx.draw_networkx_nodes(G, pos, node_size = 30, node_color = oxdraw, cmap='Blues')
+    
     """
     #### IN_NODES i OUT_NODES ####
     x_in, y_in = [], []

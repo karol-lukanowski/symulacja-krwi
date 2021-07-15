@@ -23,8 +23,8 @@ def pruning(G1, reg_reg_edges, reg_something_edges, in_edges, pnow, presult, oxr
             G1, reg_reg_edges, reg_something_edges, in_edges, pnow = final_pruning_shear(G1, reg_reg_edges, reg_something_edges, in_edges, pnow, presult, oxresult, th)
         elif pruning_type == "flow":
             G1, reg_reg_edges, reg_something_edges, in_edges, pnow = final_pruning_flow(G1, reg_reg_edges, reg_something_edges, in_edges, pnow, presult, oxresult, th)
-        Dr.drawblood(name=f'prun_q_blood{th:0.4f}.png', oxresult=oxresult, data='q')
-        Dr.drawblood(name=f'prun_d_blood{th:0.4f}.png', oxresult=oxresult, data='d') 
+        Dr.drawblood(name=f'prun_q_blood_shear{th:0.4f}.png', oxresult=oxresult, data='q')
+        #Dr.drawblood(name=f'prun_d_blood_shear{th:0.4f}.png', oxresult=oxresult, data='d') 
         for i,e in enumerate(reg_reg_edges + reg_something_edges + in_edges):
             n1, n2, d, l = e
             F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
@@ -57,19 +57,19 @@ def final_pruning_shear(G1, reg_reg_edges, reg_something_edges, in_edges, pnow, 
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         if F < Fmax * Fth_prun:
-            d = Ut.PosGauss(noise[1], noise[2])
+            d = 1
         reg_reg_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         if F < Fmax * Fth_prun:
-            d = Ut.PosGauss(noise[1], noise[2])
+            d = 1
         reg_something_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         if F < Fmax * Fth_prun:
-            d = Ut.PosGauss(noise[1], noise[2])
+            d = 1
         in_edges[i] = (n1, n2, d, l)
     pmatrix = Pr.update_matrix(reg_reg_edges, reg_something_edges, in_edges)
     pnow = Pr.solve_equation(pmatrix, presult)
@@ -112,21 +112,21 @@ def final_pruning_flow(G1, reg_reg_edges, reg_something_edges, in_edges, pnow, p
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
             if q < qmax * qth_prun:               
-                d = Ut.PosGauss(noise[1], noise[2])
+                d = 1
             reg_reg_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(reg_something_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
             if q < qmax * qth_prun:
-                d = Ut.PosGauss(noise[1], noise[2])
+                d = 1
             reg_something_edges[i] = (n1, n2, d, l)
     for i,e in enumerate(in_edges):
         n1, n2, d, l = e
         if (oxresult[n1] == 1 or oxresult[n2] == 1):
             q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
             if q < qmax * qth_prun:
-                d = Ut.PosGauss(noise[1], noise[2])
+                d = 1
             in_edges[i] = (n1, n2, d, l)
     pmatrix = Pr.update_matrix(reg_reg_edges, reg_something_edges, in_edges)
     pnow = Pr.solve_equation(pmatrix, presult)

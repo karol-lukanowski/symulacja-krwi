@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from build import dth
 import networkx as nx
-from morphopy.neurontree import NeuronTree as Nt
-from morphopy.computation import file_manager as Fm
+#from morphopy.neurontree import NeuronTree as Nt
+#from morphopy.computation import file_manager as Fm
 
 
 def getDiGraph(G, pnow, oxresult, in_nodes):
