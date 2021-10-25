@@ -1,6 +1,7 @@
 import scipy.sparse as spr
 import scipy.sparse.linalg as sprlin
 import numpy as np
+import delaunay as De
 
 from build import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, Dv, dth
 
@@ -12,11 +13,13 @@ def solve_equation(matrix, vresult):
 
 
 
-def create_vector(oxnow, oxresult):
-    vresult = 1/(1+np.exp(15*(oxnow-0.3)))
-    #vresult = 1
+def create_vector(G, n, oxresult):
+    #vresult = 1/(1+np.exp(15*(oxnow-0.3)))
+    vresult = np.ones(nkw)
     vresult = np.where(oxresult == 1, 0, vresult)
-    vresult = - vresult
+#    node = De.find_node(G, [n/2 - n/6, n/2 + n/10 + n/6])
+#    vresult[node] = 100 
+    vresult = -vresult
     return vresult
 
 def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
@@ -64,7 +67,7 @@ def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
-    '''
+    
     result = 0
     if (F > F0_ox):
         if (F < F1_ox):
@@ -74,8 +77,8 @@ def d_update(F):
     else:
         result = z0_ox
     return result * dt_ox
-    '''
-    return (z0_ox-1/(1+np.exp(F1_ox*(F-F0_ox)))) * dt_ox
+    
+    #return (z0_ox-1/(1+np.exp(F1_ox*(F-F0_ox)))) * dt_ox
     
 
 def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
@@ -113,3 +116,27 @@ def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
 
 
     return reg_reg_edges, reg_something_edges, in_edges, oxresult
+
+def update_blood(oxresult, reg_reg_edges, reg_something_edges, in_edges):
+    for i,e in enumerate(reg_reg_edges):
+        n1, n2, d, l = e
+        if d > dth:
+            oxresult[n1] = 1
+            oxresult[n2] = 1
+
+
+    for i,e in enumerate(reg_something_edges):
+        n1, n2, d, l = e
+        if d > dth:
+            oxresult[n1] = 1
+            oxresult[n2] = 1
+
+
+    for i,e in enumerate(in_edges):
+        n1, n2, d, l = e
+        if d > dth:
+            oxresult[n1] = 1
+            oxresult[n2] = 1
+
+
+    return oxresult

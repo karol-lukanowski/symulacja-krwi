@@ -2,9 +2,9 @@ import numpy as np
 
 
 
-n = 201 # rozmiar siatki
+n = 101 # rozmiar siatki
 nkw = n ** 2
-iters = 301  # liczba iteracji
+iters = 601  # liczba iteracji
 save_every = 30
 
 #noise = ["uniform", 1, 3] #jednorodny rozkład srednic, srednica początkowa, diameter_wiggle_param
@@ -26,12 +26,20 @@ z1 = 1
 F_mult = 1
 dt = 0.05
 
+kb = 10
 
 D = 1 # współczynnik dyfuzji
 k = 0.1 # stała reakcji
 dth = 4 # graniczna grubosć
 #dth = 15
-Dv = 1 # współczynnik dyfuzji VEGF
+Dv = 0.2 # współczynnik dyfuzji VEGF
+
+
+F0_p = 0.15
+F1_p = 0.2
+z0_p = 0
+z1_p = 5
+cp = 1
 
 F0_ox = 0.1
 F1_ox = 1
@@ -41,10 +49,10 @@ z1_ox = 1
 F_mult_ox = 0.005
 dt_ox = 0.4
 
-ks = 0.01
+ks = 0.0001
 v = -1
 R = 1
-cs = 0.0000001
+cs = 0.00015
 
 pruning_iters = 0
 pruning_type = "flow"
@@ -56,15 +64,20 @@ ddrawconst = 3
 
 
 
-load = 0 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
+load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
 templatki_names = ['deslabiak','deavr','dehard','trslabiak','travr','trhard']
 #load_name = templatki_names[0] #load = 1 - nr folderu, load = 2 - nazwa templatki
-load_name = 'dedonut201/58'
+#load_name = 'derect101template'
+#load_name = 'deown101own101/0'
+load_name = 'own101'
+#load_name = 'derect101derect101template/8'
 
 #geo = "cylindrical"
-geo = "donut"
-#geo = "rect"
+#geo = "donut"
+geo = "rect"
 #geo = "own"
+
+in_nodes_own, out_nodes_own = [n/2, n/2], [n/2 + n/10, n/2 + n/10]
 
 nettype = "de"
 #nettype = "tr"

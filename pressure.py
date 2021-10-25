@@ -4,6 +4,7 @@ import numpy as np
 from collections import defaultdict
 from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, in_nodes, out_nodes, qin, presout
 from utils import mu_d
+from config import cp, F0_p, F1_p, z0_p, z1_p
 
 
 
@@ -80,10 +81,21 @@ def d_update(F):
     else:
         result = z0
     return result * dt
-    
     #return (z0-1/(1+np.exp(F1*(F-F0)))) * dt
 
-def update_graph(G, pnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
+def d_update_gradp(F):
+    #zmiana średnicy pod względem siły F
+    result = 0
+    if (F > F0_p):
+        if (F < F1_p):
+            result = z0_p+(F-F0_p)*(z1_p-z0_p)/(F1_p-F0_p)
+        else:
+            result = z1_p
+    else:
+        result = z0_p
+    return result
+
+def update_graph(pnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
     for i,e in enumerate(reg_reg_edges):
         n1, n2, d, l = e
         F = F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
@@ -136,6 +148,25 @@ def update_graph2(G, pnow, oxresult, reg_reg_edges, reg_something_edges, in_edge
 
     return reg_reg_edges, reg_something_edges, in_edges
 
+def update_graph_gradp(pnow, reg_reg_edges, reg_something_edges, in_edges):
+    pin = np.max(pnow)
+    for i,e in enumerate(reg_reg_edges):
+        n1, n2, d, l = e
+        F = cp * np.abs(pnow[n1] - pnow[n2]) / (pin * l)
+        d += d_update_gradp(F)
+        reg_reg_edges[i] = (n1, n2, d, l)
+    for i,e in enumerate(reg_something_edges):
+        n1, n2, d, l = e
+        F = cp * np.abs(pnow[n1] - pnow[n2]) /  (pin * l)
+        d += d_update_gradp(F)
+        reg_something_edges[i] = (n1, n2, d, l)
+    for i,e in enumerate(in_edges):
+        n1, n2, d, l = e
+        F = cp * np.abs(pnow[n1] - pnow[n2]) /  (pin * l)
+        d += d_update_gradp(F)
+        in_edges[i] = (n1, n2, d, l)
+
+    return reg_reg_edges, reg_something_edges, in_edges
 
 
 def update_network(G1,reg_reg_edges, reg_something_edges, pnow):

@@ -5,7 +5,7 @@ import triangular_net as Tr
 import delaunay as De
 from geometry import set_geometry, equidistant_geometry, create_edgelist
 import save as Sv
-from config import load, iters, geo, nettype, n
+from config import load, iters, geo, nettype, n, in_nodes_own, out_nodes_own
 
 
 if load == 0:
@@ -19,13 +19,20 @@ if load == 0:
         G, boundary_edges = Tr.Build_triangular_net(n, length_wiggle_param = length_wiggle_param, noise = noise)
         delfix = False
     G2 = G.copy()
-    in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del' : delfix})
-    reg_reg_edges, reg_something_edges, other_edges = create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in)
+    if geo != 'own':
+        in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges = set_geometry(n, G, geo=geo, R=n//2.5, R_s=n//20, **{'del' : delfix})
+    elif geo == 'own':
+        in_nodes, out_nodes, reg_nodes, other_nodes, boundary_nodes_out, boundary_nodes_in, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes_own, out_nodes=out_nodes_own)
     #in_nodes, out_nodes = equidistant_geometry(G, n, R = n//2.5, xrange = n, yrange = n, how_many = 200)
-    #in_nodes, out_nodes, reg_nodes, other_nodes, in_edges = set_geometry(n, G, geo='own', in_nodes=in_nodes, out_nodes=out_nodes)
+
+        
+
     
+    reg_reg_edges, reg_something_edges, other_edges = create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in)
     
-    
+ #   in_nodes_ox = []
+ #   for i in range(51):
+ #       in_nodes_ox.append(25+i*51)
     in_nodes_ox = in_nodes
     out_nodes_ox = out_nodes
     
@@ -47,8 +54,8 @@ if load == 0:
         oxresult = np.zeros(nkw)
         for node in in_nodes_ox:
             oxresult[node] = 1
-    #    for node in out_nodes_ox:
-    #        oxresult[node] = 1
+        for node in out_nodes_ox:
+            oxresult[node] = 1
         return oxresult
     oxresult = create_vector()
     Sv.save_all(dirname+'/'+'template', reg_reg_edges, reg_something_edges, other_edges, oxresult,
@@ -97,8 +104,8 @@ else:
         oxresult = np.zeros(nkw)
         for node in in_nodes_ox:
             oxresult[node] = 1
-    #    for node in out_nodes_ox:
-    #        oxresult[node] = 1
+        for node in out_nodes_ox:
+            oxresult[node] = 1
         return oxresult
     oxresult = create_vector()
     

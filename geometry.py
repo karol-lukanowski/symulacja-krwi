@@ -99,8 +99,10 @@ def search_nodes(G, n0):
 def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
     def rect_default_nodes():
         in_nodes = list(range(n))
+        #in_nodes = [n // 2]
         reg_nodes = list(range(n,n * (n - 1)))
         out_nodes = list(range(n * (n - 1), n * n))
+        #out_nodes = [n * n - n // 2]
         boundary_nodes_out = []
         boundary_nodes_in = []
         return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
@@ -158,7 +160,7 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         out_nodes = find_circle_nodes(G, n, R)[2]
         return in_nodes, out_nodes
 
-    in_nodes, out_nodes, reg_nodes, in_edges = [], [], [], []
+    in_nodes, out_nodes, reg_nodes, in_edges, boundary_nodes_out, boundary_nodes_in = [], [], [], [], [], []
     if geo == 'rect':
         in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = rect_default_nodes()
     elif geo == 'cylindrical':
@@ -166,13 +168,13 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
     elif geo == 'donut':
         in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = don_default_nodes()
     elif geo == 'own':
-        in_nodes, out_nodes = kwargs['in_nodes'], kwargs['out_nodes']
+        in_nodes, out_nodes = [De.find_node(G, kwargs['in_nodes'])], [De.find_node(G, kwargs['out_nodes'])]
         reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
     else:
         print('Wrong geometry specified')
         return 0
 
-
+    
 #    reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
     for node in in_nodes:
         for neigh in G.neighbors(node):

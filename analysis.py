@@ -4,6 +4,7 @@ from build import dth
 import networkx as nx
 #from morphopy.neurontree import NeuronTree as Nt
 #from morphopy.computation import file_manager as Fm
+from config import qdrawconst
 
 
 def getDiGraph(G, pnow, oxresult, in_nodes):
@@ -12,12 +13,13 @@ def getDiGraph(G, pnow, oxresult, in_nodes):
     for edge in G.edges:
         n1, n2 = edge
         d = G[n1][n2]['d']
+        q = G[n1][n2]['q']
         if oxresult[n1] and oxresult[n2] and d >= dth:
             deltaP = pnow[n1] - pnow[n2]
             if deltaP >= 0:
-                DiG.add_edge(n1, n2)
+                DiG.add_edge(n1, n2, q = q)
             else:
-                DiG.add_edge(n2, n1)
+                DiG.add_edge(n2, n1, q = q)
 
             DiG.nodes[n1]["pos"] = pos[n1]
             DiG.nodes[n2]["pos"] = pos[n2]
@@ -121,11 +123,19 @@ def plotStrahlerHistogram(DiG, dirname):
 
 def plotStrahlerGraph(DiG, dirname):
     pos = nx.get_node_attributes(DiG, 'pos')
-    strahler = nx.get_node_attributes(DiG, 'strahler')
+    #strahler = nx.get_node_attributes(DiG, 'strahler')
     plt.figure(figsize=(100, 100))
     plt.axis('off')
-    nx.draw_networkx_edges(DiG, pos)
-    nx.draw_networkx_labels(DiG, pos, labels= strahler)
+    qmax = max([edge[2] for edge in DiG.edges(data='q')])
+    edges = []
+    qs = []
+    for edge in DiG.edges(data='q'):
+        x, y, q = edge
+        edges.append((x, y))
+        qs.append(q)
+    
+    nx.draw_networkx_edges(DiG, pos, arrows = True, edgelist = edges, width=qdrawconst * np.array(qs) / qmax)
+    #nx.draw_networkx_labels(DiG, pos, labels= strahler)
     plt.savefig(dirname + "/strahler_graph.png")
     # plt.show()
 

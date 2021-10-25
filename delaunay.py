@@ -118,3 +118,19 @@ def find_center_node(G, n, xrange, yrange):
             Min = r
             id_center = node
     return id_center
+
+
+def find_node(G, pos):
+    def r_squared(node):
+        x, y = G.nodes[node]['pos']
+        r_sqr = (x - pos[0]) ** 2 + (y - pos[1]) ** 2
+        return r_sqr
+    r_min = len(G.nodes())
+    n_min = 0
+    for node in G.nodes():
+        r = r_squared(node)
+        if r < r_min:
+            r_min = r
+            n_min = node
+    return n_min
+    

@@ -3,6 +3,8 @@
 *.png
 *.pyc
 *.json
+*.bmp
+*.psd
 /symulacja-krwi-materialy/fitkrew.plt
 /symulacja-krwi-materialy/main.pdf
 /symulacja-krwi-materialy/parametry/D/D.pdf

@@ -12,8 +12,8 @@ def create_vector():
     oxresult = np.zeros(nkw)
     for node in in_nodes_ox:
         oxresult[node] = 1
-#    for node in out_nodes_ox:
-#        oxresult[node] = 1
+    #for node in out_nodes_ox:
+    #    oxresult[node] = 1
     return oxresult
 
 
@@ -62,6 +62,7 @@ def update_matrix(oxresult, reg_reg_edges, reg_something_edges, other_edges):
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
+    '''
     result = 0
     if (F > F0_ox):
         if (F < F1_ox):
@@ -71,7 +72,8 @@ def d_update(F):
     else:
         result = z0_ox
     return result * dt_ox
-#    return (1-1/(1+np.exp(10*(F-0.5)))) * dt_ox
+    '''
+    return (1-1/(1+np.exp(30*(F-0.3)))) * dt_ox
 
 
 def update_graph(oxnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
