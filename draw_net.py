@@ -1,22 +1,21 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from matplotlib import gridspec
+
 import pressure as Pr
 import vegf as Ve
-from build import (G, in_nodes, out_nodes, F_mult_ox, F_mult,
-                   c2, dt, dt_ox, dth, boundary_edges, dirname, n)
-from config import qdrawconst, ddrawconst
+
 from utils import mu_d
+
+from config import simInputData
+
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
 
 
-def drawq(name, normalize=True, oxdraw=[]):
+def drawq(name, edges, normalize=True, oxdraw=[]):
     """
     rysowanie przepływów
     """
@@ -30,16 +29,17 @@ def drawq(name, normalize=True, oxdraw=[]):
         qmax = max([edge[2] for edge in G.edges(data='q')])
         drawconst = qdrawconst
 
-    edges = []
+    drawedges = []
     qs = []
-    for edge in G.edges(data='q'):
-        x, y, q = edge
+    for edge in edges:
+        x, y, d, l, t = edge
         
-        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:            
-            edges.append((x, y))
-            qs.append(q)
 
-    nx.draw_networkx_edges(G, pos, edgelist=edges, width=drawconst * np.array(qs) / qmax)
+        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:            
+            drawedges.append((x, y))
+            qs.append(t)
+
+    nx.draw_networkx_edges(G, pos, edgelist=drawedges, width=drawconst * np.array(qs) )
 
     #### IN_NODES i OUT_NODES ####
     x_in, y_in = [], []
@@ -287,7 +287,7 @@ def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
     plt.close()
 
 
-def drawblood(name, oxresult, oxdraw, data='q'):
+def drawblood(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, oxresult, oxdraw, data='q'):
     """
     rysowanie krwi, data to q albo d
     """
@@ -311,7 +311,7 @@ def drawblood(name, oxresult, oxdraw, data='q'):
         if (oxresult[n1] != 1 or oxresult[n2] != 1):
             qs[i] = 0
 
-    nx.draw_networkx_edges(G, pos, edgelist=edges, width=qdrawconst * np.array(qs) / qmax, edge_color='r')
+    nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / qmax, edge_color='r')
     nx.draw_networkx_nodes(G, pos, node_size = 30, node_color = oxdraw, cmap='Blues')
     
     
@@ -331,7 +331,7 @@ def drawblood(name, oxresult, oxdraw, data='q'):
     plt.axis('equal')
     plt.xticks([], [])
     plt.yticks([], [])
-    plt.savefig(dirname + "/" + name)
+    plt.savefig(sid.dirname + "/" + name)
     plt.close()
 
 def draw_initial_d():

@@ -1,53 +1,45 @@
-import scipy.sparse as spr
-import scipy.sparse.linalg as sprlin
 import numpy as np
-import delaunay as De
+import scipy.sparse as spr
 
-from build import nkw, F0_ox, F1_ox, z0_ox, z1_ox, F_mult_ox, dt_ox, Dv, dth
+from utils import d_update
 
-
-
-
-def solve_equation(matrix, vresult):
-    return sprlin.spsolve(matrix, vresult)
+from config import simInputData
 
 
 
-def create_vector(G, n, oxresult):
+def create_vector(sid:simInputData, oxresult):
     #vresult = 1/(1+np.exp(15*(oxnow-0.3)))
-    vresult = np.ones(nkw)
+    vresult = np.ones(sid.nsq)
     vresult = np.where(oxresult == 1, 0, vresult)
-#    node = De.find_node(G, [n/2 - n/6, n/2 + n/10 + n/6])
-#    vresult[node] = 100 
     vresult = -vresult
     return vresult
 
-def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
+def update_matrix(sid:simInputData, vresult, edges):
 
     data, row, col = [], [], []
 
-    diag = np.zeros(nkw)
-    for n1, n2, d, l in reg_reg_edges+reg_something_edges+other_edges:
+    diag = np.zeros(sid.nsq)
+    for n1, n2, d, l, t in edges:
         if vresult[n1] == 0:
             if vresult[n2] == 0:
                 diag[n1] = 1
                 diag[n2] = 1
             else:
                 diag[n1] = 1
-                res = Dv / l
+                res = sid.Dv / l
                 data.append(res)
                 row.append(n2)
                 col.append(n1)
                 diag[n2] -= res
         elif vresult[n2] == 0:
             diag[n2] = 1
-            res = Dv / l
+            res = sid.Dv / l
             data.append(res)
             row.append(n1)
             col.append(n2)
             diag[n1] -= res
         else:
-            res = Dv / l
+            res = sid.Dv / l
             data.append(res)
             row.append(n1)
             col.append(n2)
@@ -62,81 +54,34 @@ def update_matrix(vresult, reg_reg_edges, reg_something_edges, other_edges):
             row.append(node)
             col.append(node)
             data.append(datum)
-
-    return spr.csr_matrix((data, (row, col)), shape=(nkw, nkw))
-
-def d_update(F):
-    #zmiana średnicy pod względem siły F
-    
-    result = 0
-    if (F > F0_ox):
-        if (F < F1_ox):
-            result = z0_ox+(F-F0_ox)*(z1_ox-z0_ox)/(F1_ox-F0_ox)
         else:
-            result = z1_ox
-    else:
-        result = z0_ox
-    return result * dt_ox
-    
-    #return (z0_ox-1/(1+np.exp(F1_ox*(F-F0_ox)))) * dt_ox
+            row.append(node)
+            col.append(node)
+            data.append(1)   
+
+    return spr.csr_matrix((data, (row, col)), shape=(sid.nsq, sid.nsq))
     
 
-def update_graph(vnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
+def update_graph(sid:simInputData, vnow, oxresult, edges):
     oxresult2 = oxresult.copy()
-    for i,e in enumerate(reg_reg_edges):
-        n1, n2, d, l = e
+    for i,e in enumerate(edges):
+        n1, n2, d, l, t = e
         if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
-            F = F_mult_ox * np.abs(vnow[n1] - vnow[n2])/l
-            d += d_update(F)
-            if d > dth:
+            F = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])/l
+            d += d_update(F, sid.F_ox)
+            if d > sid.dth:
                 oxresult[n1] = 1
                 oxresult[n2] = 1
-        reg_reg_edges[i] = (n1, n2, d, l)
+        edges[i] = (n1, n2, d, l, t)
+
+    return edges, oxresult
 
 
-    for i,e in enumerate(reg_something_edges):
-        n1, n2, d, l = e
-        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
-            F=F_mult_ox*np.abs(vnow[n1] - vnow[n2])/l
-            d += d_update(F)
-            if d > dth:
-                oxresult[n1] = 1
-                oxresult[n2] = 1
-        reg_something_edges[i] = (n1, n2, d, l)
-
-    for i,e in enumerate(in_edges):
-        n1, n2, d, l = e
-        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
-            F = F_mult_ox * np.abs(vnow[n1] - vnow[n2])/l
-            d += d_update(F)
-            if d > dth:
-                oxresult[n1] = 1
-                oxresult[n2] = 1
-        in_edges[i] = (n1, n2, d, l)
-
-
-    return reg_reg_edges, reg_something_edges, in_edges, oxresult
-
-def update_blood(oxresult, reg_reg_edges, reg_something_edges, in_edges):
-    for i,e in enumerate(reg_reg_edges):
-        n1, n2, d, l = e
-        if d > dth:
+def update_blood(sid:simInputData, oxresult, edges):
+    for i,e in enumerate(edges):
+        n1, n2, d, l, t = e
+        if d > sid.dth:
             oxresult[n1] = 1
             oxresult[n2] = 1
-
-
-    for i,e in enumerate(reg_something_edges):
-        n1, n2, d, l = e
-        if d > dth:
-            oxresult[n1] = 1
-            oxresult[n2] = 1
-
-
-    for i,e in enumerate(in_edges):
-        n1, n2, d, l = e
-        if d > dth:
-            oxresult[n1] = 1
-            oxresult[n2] = 1
-
 
     return oxresult
