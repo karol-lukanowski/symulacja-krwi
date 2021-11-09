@@ -3,6 +3,7 @@ import scipy.sparse.linalg as sprlin
 import numpy as np
 from collections import defaultdict
 from build import nkw, F0, F1, z0, z1, F_mult, dt, c1, in_nodes, out_nodes, qin, presout
+from utils import mu_d
 
 
 
@@ -25,7 +26,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
 
     diag = np.zeros(nkw)
     for n1, n2, d, l in reg_reg_edges:
-        res = c1 * d ** 4 / l
+        res = c1 / mu_d(d) * d ** 4 / l
         data.append(res)
         row.append(n1)
         col.append(n2)
@@ -35,7 +36,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
         diag[n1] -= res
         diag[n2] -= res
     for n1, n2, d, l in reg_something_edges:
-        res = c1 * d ** 4 / l
+        res = c1 / mu_d(d) * d ** 4 / l
         data.append(res)
         row.append(n1)
         col.append(n2)
@@ -52,7 +53,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
 
     insert = defaultdict(float)
     for n1, n2, d, l in in_edges:
-        insert[n2] += c1 * d ** 4 / l
+        insert[n2] += c1 / mu_d(d) * d ** 4 / l
     sum_insert = sum(insert.values())
 
     for node in in_nodes:
@@ -69,7 +70,7 @@ def update_matrix(reg_reg_edges, reg_something_edges, in_edges):
 
 def d_update(F):
     #zmiana średnicy pod względem siły F
-    '''
+    
     result = 0
     if (F > F0):
         if (F < F1):
@@ -79,8 +80,8 @@ def d_update(F):
     else:
         result = z0
     return result * dt
-    '''
-    return (z0-1/(1+np.exp(F1*(F-F0)))) * dt
+    
+    #return (z0-1/(1+np.exp(F1*(F-F0)))) * dt
 
 def update_graph(G, pnow, oxresult, reg_reg_edges, reg_something_edges, in_edges):
     for i,e in enumerate(reg_reg_edges):
@@ -143,12 +144,12 @@ def update_network(G1,reg_reg_edges, reg_something_edges, pnow):
     
     for n1, n2, d, l in reg_reg_edges:
         G1[n1][n2]['d']= d
-        q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
+        q = c1 / mu_d(d) * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
         G1[n1][n2]['q'] = q
 
     for n1, n2, d, l in reg_something_edges:        
         G1[n1][n2]['d'] = d
-        q = c1 * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
+        q = c1 / mu_d(d) * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
         G1[n1][n2]['q'] = q
         
         if n2 in in_nodes:
