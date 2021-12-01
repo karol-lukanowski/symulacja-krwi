@@ -6,7 +6,7 @@ from matplotlib import gridspec
 import pressure as Pr
 import vegf as Ve
 
-from utils import mu_d
+from utils import mu_d, d_update
 
 from config import simInputData
 
@@ -122,169 +122,6 @@ def drawd(name, normalize=True, oxdraw = []):
 
 
 
-def drawhist(name, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
-    """
-    rysowanie histogramów
-    """
-    dhist=[[], [], [], [], [], [], [], []]
-    qhist=[[], [], [], [], [], [], [], []]
-    shearhist=[[], [], [], [], [], [], [], []]
-    dshearhist=[[], [], [], [], [], [], [], []]
-    vegfgradhist=[[], [], [], [], [], [], [], []]
-    dvegfhist=[[], [], [], [], [], [], [], []]
-    colors=[]
-    dmax=1
-    shearmax=0.001
-    dshearmax = 0.001
-    vegfgradmax=0.001
-    dvegfmax = 0.001
-    qmax = max([edge[2] for edge in G.edges(data='q')])
-    
-    for n1, n2 in G.edges():
-        q=G[n1][n2]['q']
-        d=G[n1][n2]['d']
-        F=F_mult*c2 * mu_d(d) *q/d**3
-        shear=F
-        if shear>shearmax:
-            shearmax=shear       
-        
-    for n1, n2 in G.edges():
-        q=G[n1][n2]['q']
-        d=G[n1][n2]['d']
-        F=F_mult*c2* mu_d(d) *q/d**3
-        shear=F
-        dshear = Pr.d_update(F)
-        if (oxresult[n1] == 1 or oxresult[n2] == 1):    
-            F_ox=F_mult_ox*np.abs(vnow[n1] - vnow[n2])
-        else:
-            F_ox = 0
-        vegfgrad=F_ox
-        dvegf = Ve.d_update(F_ox)
-        if d>dmax:
-            dmax=d
-        if shear>shearmax:
-            shearmax=shear
-        if vegfgrad>vegfgradmax:
-            vegfgradmax=vegfgrad
-        if dshear > dshearmax:
-            dshearmax = dshear
-        if dvegf > dvegfmax:
-            dvegfmax = dvegf
-        
-        qhist[int(6*q/qmax)].append(q)
-        dhist[int(6*q/qmax)].append(d)
-        shearhist[int(6*q/qmax)].append(shear)
-        dshearhist[int(6*q/qmax)].append(dshear)
-        vegfgradhist[int(6*q/qmax)].append(vegfgrad)
-        dvegfhist[int(6*q/qmax)].append(dvegf)  
-        """
-        qhist[int(6*shear/shearmax)].append(q)
-        dhist[int(6*shear/shearmax)].append(d)
-        if (oxresult[n1] == 1 or oxresult [n2] == 1) and d > dth: 
-            shearhist[int(6*shear/shearmax)].append(shear)
-        else:
-            shearhist[int(6*shear/shearmax)].append(0)
-        dshearhist[int(6*shear/shearmax)].append(dshear)
-        vegfgradhist[int(6*shear/shearmax)].append(vegfgrad)
-        dvegfhist[int(6*shear/shearmax)].append(dvegf)     
-        """
-    color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'k', 'k', 'k', 'k']
-    for edge in G.edges(data="q"):
-        x, y, q = edge
-        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-            colors.append(color[int(6*edge[2]/qmax)])       
-    
-    pos = nx.get_node_attributes(G, 'pos')
-    
-    edges = []
-    qs = []
-    for edge in G.edges(data='q'):
-            x, y, q = edge
-            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-                edges.append((x, y))
-                qs.append(q)
-
-    x_in, y_in = [], []
-    for node in in_nodes:
-        x_in.append(pos[node][0])
-        y_in.append(pos[node][1])
-        
-    x_out, y_out = [], []
-    for node in out_nodes:
-        x_out.append(pos[node][0])
-        y_out.append(pos[node][1])
-        
-
- 
-    plt.figure(figsize=(25, 20))
-    plt.suptitle('Flow for n = '+str(n))
-    spec = gridspec.GridSpec(ncols=6, nrows=2, height_ratios=[5, 1])
-    
-    plt.subplot(spec.new_subplotspec((0, 0), colspan=6))
-    plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
-    plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
-    nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=qdrawconst * np.array(qs) / qmax)
-    #nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
-    plt.axis('equal')
-    
-    plt.subplot(spec[6]).set_title('Diameter')
-    cindex=0
-    plt.xlim((0,1.1*dmax))
-    for hist in dhist:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
-    plt.axvline(dth, color='k', linestyle='dashed', linewidth=1)
-    plt.yscale("log")
-    
-    plt.subplot(spec[7]).set_title('Flow')
-    cindex=0
-    plt.xlim((0, 1.1*qmax))
-    for hist in qhist:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
-    plt.yscale("log")
-    
-    plt.subplot(spec[8]).set_title('Shear')
-    cindex=0
-    plt.xlim((0, 1.1*shearmax))
-    for hist in shearhist:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
-    plt.yscale("log")        
-    
-    plt.subplot(spec[9]).set_title('Shear growth')
-    cindex=0
-    plt.xlim((-0.01,1.1*dshearmax))
-    for hist in dshearhist:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
-    plt.yscale("log")
-    
-    plt.subplot(spec[10]).set_title('VEGF gradient')
-    cindex=0
-    plt.xlim((0,1.1*vegfgradmax))
-    for hist in vegfgradhist:
-        if len(hist)>1:
-            plt.hist(hist, bins=50, color=color[cindex])
-        cindex+=1
-    plt.yscale("log")
-    
-    plt.subplot(spec[11]).set_title('VEGF growth')
-    #cindex=0
-    #plt.xlim((0,1.1*dvegfmax))
-    #for hist in dvegfhist:
-    #    if len(hist)>1:
-    #        plt.hist(hist, bins=50, color=color[cindex])
-    #    cindex+=1
-    plt.yscale("log")
-    plt.hist(vnow, bins=50, color=color[cindex])
-    
-    plt.savefig(dirname + "/" + name)
-    plt.close()
 
 
 def drawblood(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, oxresult, oxdraw, data='q'):
@@ -372,87 +209,82 @@ def plot_params(prestab, oxtab, vegftab):
     plt.close()
 
 
-def draw_growth(name, snow, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
-    """
-    rysowanie histogramów
-    """
-    dhist=[[], [], [], [], [], [], [], []]
-    qhist=[[], [], [], [], [], [], [], []]
-    shearhist=[[], [], [], [], [], [], [], []]
-    dshearhist=[[], [], [], [], [], [], [], []]
-    vegfgradhist=[[], [], [], [], [], [], [], []]
-    dvegfhist=[[], [], [], [], [], [], [], []]
-    colors=[]
-    dmax=1
-    shearmax=0.001
-    dshearmax = 0.001
-    vegfgradmax=0.001
-    dvegfmax = 0.001
-    qmax = max([edge[2] for edge in G.edges(data='q')])
-    
+def drawhist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow_downstream, name):
+    d_hist = [[], [], [], [], [], [], [], []]
+    q_hist = [[], [], [], [], [], [], [], []]
+    shear_hist = [[], [], [], [], [], [], [], []]
+    vegf_hist = [[], [], [], [], [], [], [], []]
+    gradp_hist = [[], [], [], [], [], [], [], []]
+    upstream_hist = [[], [], [], [], [], [], [], []]
+    downstream_hist = [[], [], [], [], [], [], [], []]
+    colors = []
+    d_max= 1
+    shear_max=0.001
+    vegf_max = 0.001
+    gradp_max = 0.001
+    upstream_max = 0.001
+    downstream_max = 0.001
+    q_max = max([edge[2] for edge in G.edges(data='q')])
+    pin = np.max(pnow)
+
     for n1, n2 in G.edges():
-        q=G[n1][n2]['q']
-        d=G[n1][n2]['d']
-        F=F_mult*c2 * mu_d(d) *q/d**3
-        shear=F
-        if shear>shearmax:
-            shearmax=shear       
-        
-    for n1, n2 in G.edges():
-        q=G[n1][n2]['q']
-        d=G[n1][n2]['d']
-        F=F_mult*c2* mu_d(d) *q/d**3
-        shear=F
-        dshear = Pr.d_update(F)
+        q = G[n1][n2]['q']
+        d = G[n1][n2]['d']
+        l = G[n1][n2]['length']
+
+        shear = sid.F_mult * sid.c2 * mu_d(d) * q / d ** 3
+
         if (oxresult[n1] == 1 or oxresult[n2] == 1):    
-            F_ox=F_mult_ox*np.abs(vnow[n1] - vnow[n2])
+            vegf = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])
+            gradp = sid.cp * np.abs(pnow[n1] - pnow[n2]) / (pin * l)
         else:
-            F_ox = 0
-        vegfgrad=F_ox
-        dvegf = Ve.d_update(F_ox)
-        if d>dmax:
-            dmax=d
-        if shear>shearmax:
-            shearmax=shear
-        if vegfgrad>vegfgradmax:
-            vegfgradmax=vegfgrad
-        if dshear > dshearmax:
-            dshearmax = dshear
-        if dvegf > dvegfmax:
-            dvegfmax = dvegf
+            vegf = 0
+            gradp = 0
+
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
+            if pnow[n1] > pnow[n2]:
+                upstream = sid.cs * snow_upstream[n1]
+                downstream = sid.cs * snow_downstream[n2]
+            else:
+                upstream = sid.cs * snow_upstream[n2]
+                downstream = sid.cs * snow_downstream[n1]
+        else:
+            upstream = 0
+            downstream = 0
         
-        qhist[int(6*q/qmax)].append(q)
-        dhist[int(6*q/qmax)].append(d)
-        shearhist[int(6*q/qmax)].append(shear)
-        dshearhist[int(6*q/qmax)].append(dshear)
-        vegfgradhist[int(6*q/qmax)].append(vegfgrad)
-        dvegfhist[int(6*q/qmax)].append(dvegf)  
-        """
-        qhist[int(6*shear/shearmax)].append(q)
-        dhist[int(6*shear/shearmax)].append(d)
-        if (oxresult[n1] == 1 or oxresult [n2] == 1) and d > dth: 
-            shearhist[int(6*shear/shearmax)].append(shear)
-        else:
-            shearhist[int(6*shear/shearmax)].append(0)
-        dshearhist[int(6*shear/shearmax)].append(dshear)
-        vegfgradhist[int(6*shear/shearmax)].append(vegfgrad)
-        dvegfhist[int(6*shear/shearmax)].append(dvegf)     
-        """
+        if d > d_max:
+            d_max = d
+        if shear > shear_max:
+            shear_max = shear
+        if vegf > vegf_max:
+            vegf_max = vegf
+        if gradp > gradp_max:
+            gradp_max = gradp
+        if upstream > upstream_max:
+            upstream_max = upstream
+        if downstream > downstream_max:
+            downstream_max = downstream
+
+        q_hist[int(6 * q / q_max)].append(q)
+        d_hist[int(6 * q / q_max)].append(d)
+        shear_hist[int(6 * q / q_max)].append(shear)
+        vegf_hist[int(6 * q / q_max)].append(vegf)
+        gradp_hist[int(6 * q / q_max)].append(gradp)
+        upstream_hist[int(6 * q / q_max)].append(upstream)
+        downstream_hist[int(6 * q / q_max)].append(downstream)
+
     color = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'k', 'k', 'k', 'k']
+
+    edges = []
+    qs = []
     for edge in G.edges(data="q"):
         x, y, q = edge
         if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-            colors.append(color[int(6*edge[2]/qmax)])       
-    
+            colors.append(color[int(6 * edge[2] / q_max)])
+            edges.append((x, y))
+            qs.append(q)   
+
     pos = nx.get_node_attributes(G, 'pos')
-    
-    edges = []
-    qs = []
-    for edge in G.edges(data='q'):
-            x, y, q = edge
-            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-                edges.append((x, y))
-                qs.append(q)
 
     x_in, y_in = [], []
     for node in in_nodes:
@@ -467,71 +299,215 @@ def draw_growth(name, snow, oxnow=[], oxresult=[], vnow = [], oxdraw = []):
 
  
     plt.figure(figsize=(25, 20))
-    plt.suptitle('Flow for n = '+str(n))
-    spec = gridspec.GridSpec(ncols=6, nrows=2, height_ratios=[5, 1])
+    spec = gridspec.GridSpec(ncols=7, nrows=2, height_ratios=[5, 1])
     
-    plt.subplot(spec.new_subplotspec((0, 0), colspan=6))
+    plt.subplot(spec.new_subplotspec((0, 0), colspan=7))
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
-    nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=qdrawconst * np.array(qs) / qmax)
+    nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=colors, width=sid.qdrawconst * np.array(qs) / q_max)
     #nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
     plt.axis('equal')
     
-    plt.subplot(spec[6]).set_title('Diameter')
+    plt.subplot(spec[7]).set_title('Diameter')
     cindex=0
-    plt.xlim((0,1.1*dmax))
-    for hist in dhist:
+    plt.xlim(0,1.1*d_max)
+    for hist in d_hist:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
-    plt.axvline(dth, color='k', linestyle='dashed', linewidth=1)
+    plt.axvline(sid.dth, color='k', linestyle='dashed', linewidth=1)
     plt.yscale("log")
     
-    plt.subplot(spec[7]).set_title('Flow')
+    plt.subplot(spec[8]).set_title('Flow')
     cindex=0
-    plt.xlim((0, 1.1*qmax))
-    for hist in qhist:
+    plt.xlim(0, 1.1*q_max)
+    for hist in q_hist:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log")
     
-    plt.subplot(spec[8]).set_title('Shear')
+    plt.subplot(spec[9]).set_title('Shear')
     cindex=0
-    plt.xlim((0, 1.1*shearmax))
-    for hist in shearhist:
+    plt.xlim(0, 1.1*shear_max)
+    for hist in shear_hist:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log")        
     
-    plt.subplot(spec[9]).set_title('Shear growth')
+    plt.subplot(spec[10]).set_title('VEGF')
     cindex=0
-    plt.xlim((-0.01,1.1*dshearmax))
-    for hist in dshearhist:
+    plt.xlim(0,1.1*vegf_max)
+    for hist in vegf_hist:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log")
     
-    plt.subplot(spec[10]).set_title('VEGF gradient')
+    plt.subplot(spec[11]).set_title('Pressure gradient')
     cindex=0
-    plt.xlim((0,1.1*vegfgradmax))
-    for hist in vegfgradhist:
+    plt.xlim(0,1.1*gradp_max)
+    for hist in gradp_hist:
         if len(hist)>1:
             plt.hist(hist, bins=50, color=color[cindex])
         cindex+=1
     plt.yscale("log")
     
-    plt.subplot(spec[11]).set_title('VEGF growth')
-    #cindex=0
-    #plt.xlim((0,1.1*dvegfmax))
-    #for hist in dvegfhist:
-    #    if len(hist)>1:
-    #        plt.hist(hist, bins=50, color=color[cindex])
-    #    cindex+=1
+    plt.subplot(spec[12]).set_title('Upstream')
+    cindex=0
+    plt.xlim(0,1.1*upstream_max)
+    for hist in upstream_hist:
+        if len(hist)>1:
+            plt.hist(hist, bins=50, color=color[cindex])
+        cindex+=1
     plt.yscale("log")
-    plt.hist(snow, bins=50, color=color[cindex])
+    plt.hist(vnow, bins=50, color=color[cindex])
+
+    plt.subplot(spec[13]).set_title('Downstream')
+    cindex=0
+    plt.xlim(0,1.1*downstream_max)
+    for hist in downstream_hist:
+        if len(hist)>1:
+            plt.hist(hist, bins=50, color=color[cindex])
+        cindex+=1
+    plt.yscale("log")
+    plt.hist(vnow, bins=50, color=color[cindex])
     
-    plt.savefig(dirname + "/" + name)
-    plt.close()    
+    plt.savefig(sid.dirname + "/" + name)
+    plt.close()
+
+
+def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow_downstream, name):
+    d_hist = []
+    q_hist = []
+    shear_hist = []
+    vegf_hist = []
+    gradp_hist = []
+    upstream_hist = []
+    downstream_hist = []
+    d_shear_hist = []
+    d_vegf_hist = []
+    d_gradp_hist = []
+
+
+    for n1, n2 in G.edges():
+        q = G[n1][n2]['q']
+        d = G[n1][n2]['d']
+        l = G[n1][n2]['length']
+
+        shear = sid.F_mult * sid.c2 * mu_d(d) * q / d ** 3
+        d_shear = d_update(shear, sid.F_p)
+
+        if (oxresult[n1] == 1 or oxresult[n2] == 1):    
+            vegf = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])
+            gradp = sid.cp * np.abs(pnow[n1] - pnow[n2]) / l
+        else:
+            vegf = 0
+            gradp = 0
+
+        d_vegf = d_update(vegf, sid.F_ox)
+        d_gradp = d_update(gradp, sid.F_gradp)
+
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
+            if pnow[n1] > pnow[n2]:
+                upstream = sid.cs * snow_upstream[n1]
+                downstream = sid.cs * snow_downstream[n2]
+            else:
+                upstream = sid.cs * snow_upstream[n2]
+                downstream = sid.cs * snow_downstream[n1]
+        else:
+            upstream = 0
+            downstream = 0
+        
+        d_upstream = d_update(upstream, sid.F_s)
+        d_downstream = d_update(downstream, sid.F_s)
+
+
+        q_hist.append(q)
+        d_hist.append(d)
+        shear_hist.append(shear)
+        vegf_hist.append(vegf)
+        gradp_hist.append(gradp)
+        upstream_hist.append(d_upstream)
+        downstream_hist.append(d_downstream)
+        d_shear_hist.append(d_shear)
+        d_vegf_hist.append(d_vegf)
+        d_gradp_hist.append(d_gradp)
+
+    edges = []
+    qs = []
+    for edge in G.edges(data="q"):
+        x, y, q = edge
+        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
+            edges.append((x, y))
+            qs.append(q)   
+
+    pos = nx.get_node_attributes(G, 'pos')
+
+    x_in, y_in = [], []
+    for node in in_nodes:
+        x_in.append(pos[node][0])
+        y_in.append(pos[node][1])
+        
+    x_out, y_out = [], []
+    for node in out_nodes:
+        x_out.append(pos[node][0])
+        y_out.append(pos[node][1])
+        
+    q_max = max([edge[2] for edge in G.edges(data='q')])
+ 
+    plt.figure(figsize=(25, 20))
+    spec = gridspec.GridSpec(ncols=5, nrows=3, height_ratios=[5, 1, 1])
+    
+    plt.subplot(spec.new_subplotspec((0, 0), colspan=5))
+    plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
+    plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
+    nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / q_max)
+    #nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
+    plt.axis('equal')
+    
+    plt.subplot(spec[5]).set_title('Diameter')
+    plt.hist(d_hist, bins=50)
+    plt.axvline(sid.dth, color='k', linestyle='dashed', linewidth=1)
+    plt.yscale("log")
+
+    plt.subplot(spec[6]).set_title('Flow')
+    plt.hist(q_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[7]).set_title('Shear')
+    plt.hist(shear_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[8]).set_title('VEGF')
+    plt.hist(vegf_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[9]).set_title('Grad p')
+    plt.hist(gradp_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[10]).set_title('Upstream growth')
+    plt.hist(upstream_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[11]).set_title('Signal')
+    plt.hist(snow_upstream, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[12]).set_title('Shear growth')
+    plt.hist(d_shear_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[13]).set_title('VEGF growth')
+    plt.hist(d_vegf_hist, bins=50)
+    plt.yscale("log")
+
+    plt.subplot(spec[14]).set_title('Grad p growth')
+    plt.hist(d_gradp_hist, bins=50)
+    plt.yscale("log")    
+
+    
+    plt.savefig(sid.dirname + "/" + name)
+    plt.close()

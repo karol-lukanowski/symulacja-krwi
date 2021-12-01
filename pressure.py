@@ -19,7 +19,6 @@ def update_matrix(sid:simInputData, edges, in_nodes, out_nodes):
 
     data, row, col = [], [], []
     insert = defaultdict(float)
-
     diag = np.zeros(sid.nsq)
     for n1, n2, d, l, t in edges:
         res = sid.c1 / mu_d(d) * d ** 4 / l
@@ -48,6 +47,7 @@ def update_matrix(sid:simInputData, edges, in_nodes, out_nodes):
             row.append(node)
             col.append(node)
             data.append(datum)
+
     for node in out_nodes:
         row.append(node)
         col.append(node)
@@ -73,8 +73,10 @@ def update_graph(sid:simInputData, edges, pnow):
         n1, n2, d, l, t = e
         F = sid.F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
         d += d_update(F, sid.F_p)
-        if d <= 0:
-            d = 0.01
+        if d < sid.dmin:
+            d = sid.dmin
+        elif d > sid.dmax:
+             d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
 
     return edges
@@ -83,10 +85,30 @@ def update_graph_gradp(sid:simInputData, edges, pnow):
     pin = np.max(pnow)
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
-        F = sid.cp * np.abs(pnow[n1] - pnow[n2]) / (pin * l)
-        d += d_update(F, sid.F_gradp)
+        F = sid.cp * np.abs(pnow[n1] - pnow[n2]) / l
+        d -= d_update(F, sid.F_gradp)
+        if d < sid.dmin:
+            d = sid.dmin
+        elif d > sid.dmax:
+             d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
 
+    return edges
+
+def update_graph_gradp_tips(sid:simInputData, edges, pnow, oxresult):
+    oxresult2 = oxresult.copy()
+    pin = np.max(pnow)
+    for i,e in enumerate(edges):
+        n1, n2, d, l, t = e
+        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
+            F = sid.cp * np.abs(pnow[n1] - pnow[n2]) / l
+            d += d_update(F, sid.F_gradp)
+        if d < sid.dmin:
+            d = sid.dmin
+        elif d > sid.dmax:
+             d = sid.dmax
+        edges[i] = (n1, n2, d, l, t)
+    
     return edges
 
 

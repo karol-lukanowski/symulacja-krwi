@@ -1,7 +1,9 @@
 import networkx as nx
 import dill
+from config import simInputData
+from utils import fParams
                                                                             
-def save_all(name, sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges):
+def save(name, sid:simInputData, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges):
     pos = nx.get_node_attributes(G,'pos')
     All = [sid, edges, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, oxresult, boundary_edges, pos]
 
@@ -38,3 +40,13 @@ def load(name):
     
     G1 = reproduct()
     return  sid, G1, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges
+
+
+def save_config(sid:simInputData):
+    f = open(sid.dirname+'/config.txt', 'w')
+    for key, val in sid.__class__.__dict__.items():
+        if isinstance(val, fParams):
+            f.write(f'{key} = {val.__dict__} \r')
+        else:
+            f.write(f'{key} = {val} \r')
+    f.close()     

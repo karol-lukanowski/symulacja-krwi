@@ -2,34 +2,34 @@ import numpy as np
 import scipy.sparse as spr
 
 from config import simInputData
+from utils import d_update
 
 
-def update_matrix_upstream(sid:simInputData, vnow, pnow, oxresult, edges):
+def update_matrix_upstream(sid:simInputData, vnow, pnow, edges, in_nodes):
     #sprawdzić zmiany ks
     data, row, col = [], [], []
     sresult = np.zeros(sid.nsq)
     diag = np.ones(sid.nsq) * sid.ks
     for n1, n2, d, l, t in edges:
-        if oxresult[n1] == 1:
-            if oxresult[n2] == 1:
-                if pnow[n1] > pnow[n2]:
-                    res = sid.v
-                    data.append(res)
-                    row.append(n1)
-                    col.append(n2)
-                    diag[n2] -= res
-                elif pnow[n2] > pnow[n1]:
-                    res = sid.v
-                    data.append(res)
-                    row.append(n2)
-                    col.append(n1)
-                    diag[n1] -= res
-            elif oxresult[n2] == 0:
-                sresult[n1] += sid.R * vnow[n2]
-        elif oxresult[n2] == 1:
+        if t == 0:
+            if pnow[n1] > pnow[n2]:
+                res = sid.v / l
+                data.append(res)
+                row.append(n1)
+                col.append(n2)
+                diag[n2] -= res
+            elif pnow[n2] > pnow[n1]:
+                res = sid.v / l
+                data.append(res)
+                row.append(n2)
+                col.append(n1)
+                diag[n1] -= res
+            sresult[n1] += sid.R * vnow[n2]
             sresult[n2] += sid.R * vnow[n1]
+        elif t == 1:
+            res = sid.v / l
+            diag[n1] -= res
 
-    
     row2 = np.array(row)
     col2 = np.array(col)    
     removetab = []
@@ -58,35 +58,33 @@ def update_matrix_upstream(sid:simInputData, vnow, pnow, oxresult, edges):
         col.pop(i)
         data.pop(i)
             
-
     return spr.csr_matrix((data, (row, col)), shape=(sid.nsq, sid.nsq)), sresult
 
-def update_matrix_downstream(sid, vnow, pnow, oxresult, edges):
+def update_matrix_downstream(sid, vnow, pnow, edges, out_nodes):
     #sprawdzić zmiany ks
     data, row, col = [], [], []
     sresult = np.zeros(sid.nsq)
     diag = np.ones(sid.nsq) * sid.ks
     for n1, n2, d, l, t in edges:
-        if oxresult[n1] == 1:
-            if oxresult[n2] == 1:
-                if pnow[n1] < pnow[n2]:
-                    res = sid.v
-                    data.append(res)
-                    row.append(n1)
-                    col.append(n2)
-                    diag[n2] -= res
-                elif pnow[n2] < pnow[n1]:
-                    res = sid.v
-                    data.append(res)
-                    row.append(n2)
-                    col.append(n1)
-                    diag[n1] -= res
-            elif oxresult[n2] == 0:
-                sresult[n1] += sid.R * vnow[n2]
-        elif oxresult[n2] == 1:
+        if t == 0:
+            if pnow[n1] < pnow[n2]:
+                res = sid.v / l
+                data.append(res)
+                row.append(n1)
+                col.append(n2)
+                diag[n2] -= res
+            elif pnow[n2] < pnow[n1]:
+                res = sid.v / l
+                data.append(res)
+                row.append(n2)
+                col.append(n1)
+                diag[n1] -= res
+            sresult[n1] += sid.R * vnow[n2]
             sresult[n2] += sid.R * vnow[n1]
+        elif t == 1:
+            res = sid.v / l
+            diag[n1] -= res
 
-    
     row2 = np.array(row)
     col2 = np.array(col)    
     removetab = []
@@ -115,7 +113,6 @@ def update_matrix_downstream(sid, vnow, pnow, oxresult, edges):
         col.pop(i)
         data.pop(i)
             
-
     return spr.csr_matrix((data, (row, col)), shape=(sid.nsq, sid.nsq)), sresult
 
 
@@ -128,9 +125,12 @@ def update_graph_upstream(sid:simInputData, snow, pnow, oxresult, edges):
         n1, n2, d, l, t = e
         if oxresult[n1] == 1 and oxresult[n2] == 1:
             if pnow[n1] > pnow[n2]:
-                d += sid.cs * snow[n1]
+                F = sid.cs * snow[n1]
             else:
-                d += sid.cs * snow[n2]
+                F = sid.cs * snow[n2]
+            d += d_update(F, sid.F_s)
+            # if d > sid.dmax:
+            #     d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
 
     return edges
@@ -142,9 +142,12 @@ def update_graph_downstream(sid:simInputData, snow, pnow, oxresult, edges):
         n1, n2, d, l, t = e
         if oxresult[n1] == 1 and oxresult[n2] == 1:
             if pnow[n1] < pnow[n2]:
-                d += sid.cs * snow[n1]
+                F = sid.cs * snow[n1]
             else:
-                d += sid.cs * snow[n2]
+                F = sid.cs * snow[n2]
+            d += d_update(F, sid.F_s)
+            # if d > sid.dmax:
+            #     d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
     
     return edges

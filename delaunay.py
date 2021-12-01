@@ -5,19 +5,28 @@ import scipy.spatial
 import utils as Ut
 
 
-def Build_delaunay_net(n, noise = ["uniform", 1, 1]):
+def Build_delaunay_net(n, periodic = 'top', noise = ["uniform", 1, 1]):
 
     
     nkw = n**2
 
     points = np.random.uniform(0, n, (nkw, 2))
     points = np.array(sorted(points, key = lambda elem: (elem[0]//1, elem[1])))
-
+    
     points_above = points.copy() + np.array([0, n])
     points_below = points.copy() + np.array([0, -n])
+    points_right =  points.copy() + np.array([n, 0])
+    points_left = points.copy() + np.array([-n, 0])
 
+    if periodic == 'none':
+       all_points = points
+    elif periodic == 'top': 
+        all_points = np.concatenate([points, points_above, points_below])
+    elif periodic == 'side':
+        all_points = np.concatenate([points, points_right, points_left])
+    elif periodic == 'all':
+        all_points = np.concatenate([points, points_above, points_below, points_right, points_left])
 
-    all_points = np.concatenate([points, points_above, points_below])
 
     delTri = scipy.spatial.Delaunay(all_points)
 
@@ -61,12 +70,13 @@ def Build_delaunay_net(n, noise = ["uniform", 1, 1]):
         if (n1 < nkw) and (n2 < nkw):
             final_edges.append((n1, n2))
             final_edges_lengths.append(l)
-
         elif (n1 < nkw) and (n2 >= nkw) and (n2 < 2*nkw):
             final_edges.append((n1, n2-nkw))
-
             boundary_edges.append((n1, n2-nkw))
-
+            final_edges_lengths.append(l)
+        elif (n1 < nkw) and (n2 >= 3 * nkw) and (n2 < 4*nkw):
+            final_edges.append((n1, n2-3 * nkw))
+            boundary_edges.append((n1, n2-3 * nkw))
             final_edges_lengths.append(l)
 
 

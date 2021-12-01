@@ -7,9 +7,10 @@ from config import simInputData
 
 
 
-def create_vector(sid:simInputData, oxresult):
-    #vresult = 1/(1+np.exp(15*(oxnow-0.3)))
-    vresult = np.ones(sid.nsq)
+def create_vector(sid:simInputData, oxresult, oxnow = []):
+    if not sid.oxygen: # if oxygen is off, make oxnow such that vresult = 1
+        oxnow = sid.R_c * np.ones(sid.nsq)
+    vresult = 1 / (1 + np.exp(sid.R_a * (oxnow - sid.R_c)))
     vresult = np.where(oxresult == 1, 0, vresult)
     vresult = -vresult
     return vresult
@@ -57,7 +58,7 @@ def update_matrix(sid:simInputData, vresult, edges):
         else:
             row.append(node)
             col.append(node)
-            data.append(1)   
+            data.append(1)
 
     return spr.csr_matrix((data, (row, col)), shape=(sid.nsq, sid.nsq))
     
@@ -72,16 +73,22 @@ def update_graph(sid:simInputData, vnow, oxresult, edges):
             if d > sid.dth:
                 oxresult[n1] = 1
                 oxresult[n2] = 1
+        if d < sid.dmin:
+            d = sid.dmin
+        elif d > sid.dmax:
+             d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
 
-    return edges, oxresult
+    return edges
 
 
 def update_blood(sid:simInputData, oxresult, edges):
+    oxresult2 = oxresult.copy()
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
         if d > sid.dth:
-            oxresult[n1] = 1
-            oxresult[n2] = 1
-
+            if oxresult2[n1] == 1:
+                oxresult[n2] = 1
+            elif oxresult2[n2] == 1:
+                oxresult[n1] = 1
     return oxresult

@@ -249,7 +249,18 @@ def create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, bound
             edges.append((n2, n1, d, l, 1))
         elif n1 in out_nodes and n2 not in out_nodes:
             edges.append((n2, n1, d, l, 2))
-    
+        # if n1 in reg_nodes and n2 in reg_nodes:
+        #     edges.append((n1, n2, d, l, 0))
+        # elif n1 in reg_nodes and n2 in in_nodes:
+        #     edges.append((n1, n2, d, l, 1))
+        # elif n1 in reg_nodes and n2 in out_nodes:
+        #     edges.append((n1, n2, d, l, 2))
+        # elif n1 in in_nodes and n2 in reg_nodes:
+        #     edges.append((n2, n1, d, l, 1))
+        # elif n1 in out_nodes and n2 in reg_nodes:
+        #     edges.append((n2, n1, d, l, 2))
+
+
     removetab = []
     for index, (n1, n2, d, l, t) in enumerate(edges):
         if n1 in boundary_nodes_in and n2 in boundary_nodes_out:

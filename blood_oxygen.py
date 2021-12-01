@@ -13,7 +13,7 @@ def create_vector(sid:simInputData, in_nodes_ox):
 def update_matrix(sid:simInputData, pnow, oxresult, bloodoxresult, edges):
     data, row, col = [], [], []
     diag = np.ones(sid.nsq) * sid.kb
-    for n1, n2, d, l in edges:
+    for n1, n2, d, l, t in edges:
         if bloodoxresult[n1] == 1:
             diag[n1] = 1
             if bloodoxresult[n2] == 1:
