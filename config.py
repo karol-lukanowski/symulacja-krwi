@@ -59,7 +59,7 @@ class simInputData:
     R = 1
     cs = 0.000015
 
-    dec = 0.01
+    dec = 0.002
 
     pruning_iters = 0
     pruning_type = "flow"
@@ -71,7 +71,7 @@ class simInputData:
 
 
 
-    load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
+    load = 0 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci, 2- wczytanie jednej z templatek
     #load_name = template #load = 1 - nr folderu, load = 2 - nazwa templatki
     #load_name = 'own101/1/template/0'
     load_name = 'own101/7'
@@ -83,9 +83,11 @@ class simInputData:
     #geo = "rect"
     geo = "own"
 
-    periodic = 'all'
+    periodic = 'none'
 
-    in_nodes_own, out_nodes_own = [n / 2 - 5, n / 2 - 5], [n / 2 + 5, n / 2 + 5]
+    #in_nodes_own, out_nodes_own = [[5, 15]], [[15, 5]]
+    in_nodes_own, out_nodes_own = [[40, 40], [60, 60], [60, 40], [40, 60]], [[50, 64], [50, 36], [36, 50], [64, 50]] #lista pozycji nodów in i out
+
 
     length_wiggle_param = 1
     

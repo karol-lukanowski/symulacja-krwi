@@ -162,7 +162,13 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
     elif geo == 'donut':
         in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = don_default_nodes()
     elif geo == 'own':
-        in_nodes, out_nodes = [De.find_node(G, kwargs['in_nodes'])], [De.find_node(G, kwargs['out_nodes'])]
+        in_nodes_pos = kwargs['in_nodes']
+        out_nodes_pos = kwargs['out_nodes']
+        for pos in in_nodes_pos:
+            in_nodes.append(De.find_node(G, pos))
+        for pos in out_nodes_pos:
+            out_nodes.append(De.find_node(G, pos))
+        #in_nodes, out_nodes = [De.find_node(G, kwargs['in_nodes'])], [De.find_node(G, kwargs['out_nodes'])]
         reg_nodes = [node for node in G.nodes() if (node not in in_nodes) and (node not in out_nodes)]
     else:
         print('Wrong geometry specified')
