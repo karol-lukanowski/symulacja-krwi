@@ -3,7 +3,7 @@ import blood_oxygen as Bo
 import decrease as Dc
 import draw_net as Dr
 import oxygen as Ox
-import pressure as Pr
+import pressure2 as Pr
 #import pruning as Prun
 import save as Sv
 import upstream as Up
@@ -73,12 +73,12 @@ for i in range(sid.old_iters, iters):
         #         gradp[n2] = np.abs((pnow[n1] - pnow[n2]) / (pin * l))
             
         Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.save_every:04d}.png')
-#        Dr.drawd(name = f'd{(i+old_iters)//save_every:04d}.png', oxdraw = [])
+        Dr.draw(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, name=f'd{sid.old_iters // sid.save_every:04d}.png', data='d')
 #        Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png', oxdraw = [])
 #        Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow2)
 #        Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=snow)
-        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
-        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = snow, data='d')
+#        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
+#        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = snow, data='d')
     
     if sid.shear_d:
         edges = Pr.update_graph(sid, edges, pnow)    

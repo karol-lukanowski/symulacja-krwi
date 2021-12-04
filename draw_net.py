@@ -13,90 +13,34 @@ from config import simInputData
 
 # normalizacja rysowania (maksymalna grubość krawędzi)
 
-
-
-def drawq(name, edges, normalize=True, oxdraw=[]):
+def draw(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult, name, data='q'):
     """
-    rysowanie przepływów
+    rysowanie krwi, data to q albo d
     """
-    plt.figure(figsize=(20, 20))
-    plt.axis('off')
-    pos = nx.get_node_attributes(G, 'pos')
-    if (normalize == False):
-        qmax = 1
-        drawconst = 1
-    else:
-        qmax = max([edge[2] for edge in G.edges(data='q')])
-        drawconst = qdrawconst
-
-    drawedges = []
-    qs = []
-    for edge in edges:
-        x, y, d, l, t = edge
-        
-
-        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:            
-            drawedges.append((x, y))
-            qs.append(t)
-
-    nx.draw_networkx_edges(G, pos, edgelist=drawedges, width=drawconst * np.array(qs) )
-
-    #### IN_NODES i OUT_NODES ####
-    x_in, y_in = [], []
-    for node in in_nodes:
-        x_in.append(pos[node][0])
-        y_in.append(pos[node][1])
-    plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
-
-    x_out, y_out = [], []
-    for node in out_nodes:
-        x_out.append(pos[node][0])
-        y_out.append(pos[node][1])
-    plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
-
-
-    #### OXYGEN NODES ####
-    nx.draw_networkx_nodes(G, pos, node_size = 15, node_color = oxdraw, cmap='plasma', vmax = 10000)
-    
-    #nx.draw(G, pos, with_labels=True)
-    #plt.show()
-
-    plt.axis('equal')
-    plt.savefig(dirname + "/" + name)
-    plt.close()
-
-
-
-
-def drawd(name, normalize=True, oxdraw = []):
-    """
-    rysowanie srednic
-    """
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(40, 40), dpi = 200)
     plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
-    if (normalize == False):
-        dmax = 1
-        drawconst = 1
-    else:
-        dmax = max([edge[2] for edge in G.edges(data='d')])
-        drawconst = ddrawconst
-
-    color = ['white', 'lightgrey', 'darkgrey', 'grey', 'dimgrey', 'black', 'black','black','black','black','black']
-    colors = []
+    qmax = max([edge[2] for edge in G.edges(data=data)])
 
     edges = []
-    ds = []
-    for edge in G.edges(data='d'):
-            x, y, d = edge
+    qs = []
+    colors = []
+    for edge in G.edges(data=data):
+            x, y, q = edge
             if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
-                ds.append(d)
-                colors.append(color[int(6*edge[2]/dmax)])
-                
-    nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color = colors, width=drawconst * np.array(ds) / dmax)
+                qs.append(q)
+                if oxresult[x] == 1 and oxresult[y] == 1:
+                    colors.append('r')
+                else:
+                    colors.append('k')
 
+
+    nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / qmax, edge_color = colors)
+    #nx.draw_networkx_nodes(G, pos, node_size = 30, node_color = oxdraw, cmap='Blues')
+    
+    
     #### IN_NODES i OUT_NODES ####
     x_in, y_in = [], []
     for node in in_nodes:
@@ -109,19 +53,12 @@ def drawd(name, normalize=True, oxdraw = []):
         x_out.append(pos[node][0])
         y_out.append(pos[node][1])
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
-
-    #### OXYGEN NODES ####
-    #nx.draw_networkx_nodes(G, pos, node_size=25 * oxdraw, node_color=oxdraw, cmap='Reds')
-
-
-    plt.axis('equal')
-    plt.savefig(dirname + "/" + name)
-    plt.close()    
     
-
-
-
-
+    plt.axis('equal')
+    plt.xticks([], [])
+    plt.yticks([], [])
+    plt.savefig(sid.dirname + "/" + name)
+    plt.close()
 
 
 def drawblood(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, oxresult, oxdraw, data='q'):
@@ -437,11 +374,16 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
 
     edges = []
     qs = []
-    for edge in G.edges(data="q"):
-        x, y, q = edge
-        if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-            edges.append((x, y))
-            qs.append(q)   
+    colors = []
+    for n1, n2 in G.edges():
+        q = G[n1][n2]['q']
+        d = G[n1][n2]['d']
+        l = G[n1][n2]['length']
+        if (n1, n2) not in boundary_edges and (n2, n1) not in boundary_edges:
+            edges.append((n1, n2))
+            qs.append(q)
+            F = sid.F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+            colors.append(d_update(F, sid.F_p))
 
     pos = nx.get_node_attributes(G, 'pos')
 
@@ -463,7 +405,7 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
     plt.subplot(spec.new_subplotspec((0, 0), colspan=5))
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
-    nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / q_max)
+    nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color = colors, width=sid.qdrawconst * np.array(qs) / q_max, edge_cmap = plt.cm.plasma)
     #nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')   
     plt.axis('equal')
     

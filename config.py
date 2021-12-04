@@ -16,12 +16,13 @@ class simInputData:
     shear_d = True
     vegf_d = True
     signal_d = True
-    gradp_d = True
+    gradp_d = False
     decrease_d = True
 
     data_collection = False
 
     qin = 10  # ilosć wpływającej krwi
+    presin = 1 / 15
     presout = 0  # cisnienie na wyjsciu
     mu = 0.0035  # współczynnik lepkosci
     l = 1  # początkowa długosć krawędzi
@@ -41,10 +42,10 @@ class simInputData:
     #dth = 15
     Dv = 0.2 # współczynnik dyfuzji VEGF
 
-    F_p = fParams({'F0': 0.2, 'F1': 5, 'z0': 0, 'z1': 0.05})
+    F_p = fParams({'F0': 0.2, 'F1': 5, 'z0': 0, 'z1': 0.02})
     F_gradp = fParams({'F0': 0.0001, 'F1': 0.001, 'z0': 0, 'z1': 0.05})
-    F_ox = fParams({'F0': 0.1, 'F1': 1, 'z0': 0, 'z1': 0.4})
-    F_s = fParams({'F0': 0.2, 'F1': 0.5, 'z0': 0, 'z1': 0.04})
+    F_ox = fParams({'F0': 0.1, 'F1': 1.5, 'z0': 0, 'z1': 0.4})
+    F_s = fParams({'F0': 0.2, 'F1': 1, 'z0': 0, 'z1': 0.08})
     
     R_c = 0.3
     R_a = 15
@@ -59,7 +60,7 @@ class simInputData:
     R = 1
     cs = 0.000015
 
-    dec = 0.002
+    dec = 0.005
 
     pruning_iters = 0
     pruning_type = "flow"
@@ -83,10 +84,10 @@ class simInputData:
     #geo = "rect"
     geo = "own"
 
-    periodic = 'none'
+    periodic = 'all'
 
-    #in_nodes_own, out_nodes_own = [[5, 15]], [[15, 5]]
-    in_nodes_own, out_nodes_own = [[40, 40], [60, 60], [60, 40], [40, 60]], [[50, 64], [50, 36], [36, 50], [64, 50]] #lista pozycji nodów in i out
+    in_nodes_own, out_nodes_own = [[45, 45]], [[55, 55]]
+    #in_nodes_own, out_nodes_own = [[40, 40], [60, 60], [60, 40], [40, 60]], [[50, 64], [50, 36], [36, 50], [64, 50]] #lista pozycji nodów in i out
 
 
     length_wiggle_param = 1
