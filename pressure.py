@@ -53,7 +53,6 @@ def update_matrix(sid:simInputData, edges, in_nodes, out_nodes):
         col.append(node)
         data.append(1)
 
-    
     sum_insert = sum(insert.values())
 
     for node in in_nodes:
@@ -86,7 +85,7 @@ def update_graph_gradp(sid:simInputData, edges, pnow):
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
         F = sid.cp * np.abs(pnow[n1] - pnow[n2]) / l
-        d -= d_update(F, sid.F_gradp)
+        d += d_update(F, sid.F_gradp)
         if d < sid.dmin:
             d = sid.dmin
         elif d > sid.dmax:

@@ -1,16 +1,16 @@
-import analysis2 as An
+#import analysis as An
 import blood_oxygen as Bo
 import decrease as Dc
 import draw_net as Dr
 import oxygen as Ox
-import pressure2 as Pr
+import pressure as Pr
 #import pruning as Prun
 import save as Sv
 import upstream as Up
 import vegf as Ve
 
 from build import build
-from utils import solve_equation
+from utils import solve_equation, simAnalysisData, collect_data
 
 from config import simInputData
 
@@ -18,7 +18,7 @@ from config import simInputData
 
 sid = simInputData()
 sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges = build(sid)
-sad = An.simAnalysisData()
+sad = simAnalysisData()
 
 presult = Pr.create_vector(sid, in_nodes, out_nodes)
 if sid.oxygen:
@@ -57,28 +57,21 @@ for i in range(sid.old_iters, iters):
 
 
 
-    if i%sid.save_every == 0:
+    if i % sid.plot_every == 0:
         vnow2 = vnow.copy()
         for node in out_nodes:
             vnow2[node] = 0
 
         G = Pr.update_network(G, sid, edges, pnow)
 
-        # gradp = np.zeros(n**2)
-        # pin = np.max(pnow)
-        # for n1, n2, d, l in reg_reg_edges+reg_something_edges+in_edges:
-        #     if np.abs((pnow[n1] - pnow[n2]) / (pin * l)) > gradp[n1]:
-        #         gradp[n1] = np.abs((pnow[n1] - pnow[n2]) / (pin * l))
-        #     if np.abs((pnow[n1] - pnow[n2]) / (pin * l)) > gradp[n2]:
-        #         gradp[n2] = np.abs((pnow[n1] - pnow[n2]) / (pin * l))
-            
-        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.save_every:04d}.png')
-        Dr.draw(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, name=f'd{sid.old_iters // sid.save_every:04d}.png', data='d')
+        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
+        #Dr.draw(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, name=f'd{sid.old_iters // sid.save_every:04d}.png', data='d')
 #        Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png', oxdraw = [])
 #        Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow2)
 #        Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=snow)
 #        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
-#        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = snow, data='d')
+        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
+        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = snow, data='d')
     
     if sid.shear_d:
         edges = Pr.update_graph(sid, edges, pnow)    
@@ -95,13 +88,16 @@ for i in range(sid.old_iters, iters):
     oxresult = Ve.update_blood(sid, oxresult, edges)
 
     if sid.data_collection:
-        An.collect_data(sad, sid, in_nodes, pnow, vnow, snow)
+        collect_data(sad, sid, in_nodes, pnow, vnow, oxnow)
 
+
+    if i % sid.save_every == 0 and i != 0:
+        Sv.save(f'/save{sid.old_iters}.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
 
     sid.old_iters += 1
 
 Sv.save('/save.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
-#An.plot_data(sid)
+Dr.plot_params(sid)
 
 #An.getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname)
 

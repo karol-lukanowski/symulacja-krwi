@@ -108,7 +108,7 @@ def drawblood(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, ox
     plt.savefig(sid.dirname + "/" + name)
     plt.close()
 
-def draw_initial_d():
+def draw_initial_d(G, boundary_edges):
     ds = []
     for edge in G.edges(data='d'):
             x, y, d = edge
@@ -119,7 +119,16 @@ def draw_initial_d():
     plt.ylabel('count (normalized)')
     plt.title('Initial diameters distribution')
     
-def plot_params(prestab, oxtab, vegftab):
+def plot_params(sid:simInputData):
+    f = open(sid.dirname+'/parameters.txt', 'r')
+    data = np.loadtxt(f)
+    prestab = []
+    vegftab = []
+    oxtab = []
+    for row in data:
+        prestab.append(row[0])
+        vegftab.append(row[1])
+        oxtab.append(row[2])
     plt.figure(figsize=(15, 5))
     plt.suptitle('Parameters')
     spec = gridspec.GridSpec(ncols=3, nrows=1)
@@ -142,7 +151,7 @@ def plot_params(prestab, oxtab, vegftab):
     plt.xlabel('iterations')
     plt.ylabel(r'average $c_{vegf}^2$')
     
-    plt.savefig(dirname +'/parameters.png')
+    plt.savefig(sid.dirname +'/parameters.png')
     plt.close()
 
 
@@ -451,5 +460,82 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
     plt.yscale("log")    
 
     
+    plt.savefig(sid.dirname + "/" + name)
+    plt.close()
+
+def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, oxresult, oxdraw, data='q'):
+    """
+    rysowanie krwi, data to q albo d
+    """
+    plt.figure(figsize=(40, 40), dpi = 200)
+    plt.axis('off')
+    pos = nx.get_node_attributes(G, 'pos')
+
+    qmax = max([edge[2] for edge in G.edges(data=data)])
+
+    edges = []
+    qs = []
+    for edge in G.edges(data=data):
+            x, y, q = edge
+            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
+                edges.append((x, y))
+                qs.append(q)
+
+    #draw only those between oxygen nodes:
+    # for i, edge in enumerate(edges):
+    #     n1, n2 = edge
+    #     if (oxresult[n1] != 1 or oxresult[n2] != 1):
+    #         qs[i] = 0
+
+
+    
+    vessels = np.zeros(sid.nsq)
+
+    def find_veins(G, node, oxresult):
+        vessels[node] = 2
+        for neigh in G.neighbors(node):
+            if oxresult[neigh] == 1 and vessels[neigh] == 0:
+                find_veins(G, neigh, oxresult)
+
+    def find_arts(G, node, oxresult):
+        vessels[node] = 1
+        for neigh in G.neighbors(node):
+            if oxresult[neigh] == 1 and vessels[neigh] == 0:
+                find_arts(G, neigh, oxresult)
+
+    for node in in_nodes:
+        find_arts(G, node, oxresult)
+    for node in out_nodes:
+        find_veins(G, node, oxresult)
+
+    colors = []
+    for edge in edges:
+        n1, n2 = edge
+        if vessels[n1] == 1 and vessels[n2] == 1:
+            colors.append('r')
+        elif vessels[n1] == 2 and vessels[n2] == 2:
+            colors.append('b')
+        else:
+            colors.append('k')
+
+    nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / qmax, edge_color=colors)
+    nx.draw_networkx_nodes(G, pos, node_size = 15, node_color = oxdraw, cmap='Blues', vmax = 5e6)
+
+    #### IN_NODES i OUT_NODES ####
+    x_in, y_in = [], []
+    for node in in_nodes:
+        x_in.append(pos[node][0])
+        y_in.append(pos[node][1])
+    plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
+
+    x_out, y_out = [], []
+    for node in out_nodes:
+        x_out.append(pos[node][0])
+        y_out.append(pos[node][1])
+    plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
+    
+    plt.axis('equal')
+    plt.xticks([], [])
+    plt.yticks([], [])
     plt.savefig(sid.dirname + "/" + name)
     plt.close()
