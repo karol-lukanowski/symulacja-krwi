@@ -1,0 +1,40 @@
+comments in config
+
+1. n -> networkSize
+2. noise -> diameterStats
+3. qin -> flow
+4. presout -> outputPressure
+5. mu -> viscosityCoeff
+6. removed "l = 1 # poczatkowa dlugosc krawedzi" because unused
+7. F_mult -> forceMultiplier
+8. D, k -> oxygenDiffusionConst, oxygenReactionConst
+9. printing "Q_in = ..." -> "Flow of blood INTO = ..."
+10. dth -> thresholdDiameter
+11. dmin, dmax -> minimalDiameter, maximalDiameter
+12. Dv -> VEGFDiffusionCOnst
+13. load -> loadMode (0 -> 'new_simulation', 1 -> 'load_network'...), load_name -> loadDirectory
+14. G -> nxGraph
+15. presult -> pressureFlowEqRHS, pmatrix -> presssureFlowEqMatrix, pnow -> pressureVector
+16. bloodoxresult -> arterioleOxygenEqRHS, bloodoxmatrix -> arterioleOxygenEqMatrix, bloodoxnow -> arterioleOxygenVector
+17. sid.oxygen -> sid.includeOxygenEvolution, sid.signal -> includeSignalEvolution
+18. oxmatrix -> capillaryOxygenEqMatrix, oxnow -> capillaryOxygenVector
+19. oxresult -> arterioleVenuleMarker
+20. vresult, vnow, vmatrix -> VEGF...
+21. sresult, snow, smatrix -> signal...
+
+
+
+questions
+
+-> c1 and c2 constants needed in config?
+-> forceMultiplier acting locally?
+-> kb?
+-> in_nodes_ox vs in_nodes?
+
+
+
+to do
+
+-> plotting into one big function so as not to clutter main.py
+-> move pressureFlowEqRHS out of main
+-> check blood-oxygen
