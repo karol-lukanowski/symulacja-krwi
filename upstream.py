@@ -118,40 +118,14 @@ def update_matrix_downstream(sid, vnow, pnow, edges, out_nodes):
 
     
 
-def update_graph_upstream(sid:simInputData, snow, pnow, oxresult, edges):
-    
-    #dodać sigmoidy zamiast liniowych wzrostów
+def update_graph(sid:simInputData, snow_up, snow_down, pnow, oxresult, edges):
+    d_s = np.zeros(len(edges))
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
         if oxresult[n1] == 1 and oxresult[n2] == 1:
             if pnow[n1] > pnow[n2]:
-                F = sid.cs * snow[n1]
+                F = snow_up[n1] + snow_down[n2]
             else:
-                F = sid.cs * snow[n2]
-            d += d_update(F, sid.F_s)
-            if d < sid.dmin:
-                d = sid.dmin
-            elif d > sid.dmax:
-                d = sid.dmax
-        edges[i] = (n1, n2, d, l, t)
-
-    return edges
-
-def update_graph_downstream(sid:simInputData, snow, pnow, oxresult, edges):
-    
-    #dodać sigmoidy zamiast liniowych wzrostów
-    for i,e in enumerate(edges):
-        n1, n2, d, l, t = e
-        if oxresult[n1] == 1 and oxresult[n2] == 1:
-            if pnow[n1] < pnow[n2]:
-                F = sid.cs * snow[n1]
-            else:
-                F = sid.cs * snow[n2]
-            d += d_update(F, sid.F_s)
-            if d < sid.dmin:
-                d = sid.dmin
-            elif d > sid.dmax:
-                d = sid.dmax
-        edges[i] = (n1, n2, d, l, t)
-    
-    return edges
+                F = snow_up[n2] + snow_down[n1]
+            d_s[i] = d_update(F, sid.F_s)
+    return d_s

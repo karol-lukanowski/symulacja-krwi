@@ -16,16 +16,8 @@ def build(sid:simInputData):
         #G, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, oxresult = find_ladder(sid, G)
         edges = create_edgelist(G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in)
 
-        
-        # if sid.arterioles_and_venules:
-        #     out_nodes_ox = out_nodes
-        # else:
-        #     out_nodes_ox = []
         make_dir(sid)
-        
-        
-        
-        
+
         Sv.save('/template.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
         Sv.save_config(sid)
 

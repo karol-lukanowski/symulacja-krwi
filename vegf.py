@@ -64,22 +64,13 @@ def update_matrix(sid:simInputData, vresult, edges):
     
 
 def update_graph(sid:simInputData, vnow, oxresult, edges):
-    oxresult2 = oxresult.copy()
+    d_vegf = np.zeros(len(edges))
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
-        if (oxresult2[n1] == 1 or oxresult2[n2] == 1):
-            F = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])/l
-            d += d_update(F, sid.F_ox)
-            if d > sid.dth:
-                oxresult[n1] = 1
-                oxresult[n2] = 1
-        if d < sid.dmin:
-            d = sid.dmin
-        elif d > sid.dmax:
-             d = sid.dmax
-        edges[i] = (n1, n2, d, l, t)
-
-    return edges
+        if (oxresult[n1] == 1 or oxresult[n2] == 1):
+            F = np.abs(vnow[n1] - vnow[n2]) / l
+            d_vegf[i] = d_update(F, sid.F_ox)
+    return d_vegf
 
 
 def update_blood(sid:simInputData, oxresult, edges):

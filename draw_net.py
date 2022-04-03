@@ -132,10 +132,10 @@ def drawhist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult,
         d = G[n1][n2]['d']
         l = G[n1][n2]['length']
 
-        shear = sid.F_mult * sid.c2 * mu_d(d) * q / d ** 3
+        shear = sid.c2 * mu_d(d) * q / d ** 3
 
         if (oxresult[n1] == 1 or oxresult[n2] == 1):    
-            vegf = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])
+            vegf = np.abs(vnow[n1] - vnow[n2])
             gradp = sid.cp * np.abs(pnow[n1] - pnow[n2]) / (pin * l)
         else:
             vegf = 0
@@ -143,11 +143,11 @@ def drawhist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult,
 
         if oxresult[n1] == 1 and oxresult[n2] == 1:
             if pnow[n1] > pnow[n2]:
-                upstream = sid.cs * snow_upstream[n1]
-                downstream = sid.cs * snow_downstream[n2]
+                upstream = snow_upstream[n1]
+                downstream = snow_downstream[n2]
             else:
-                upstream = sid.cs * snow_upstream[n2]
-                downstream = sid.cs * snow_downstream[n1]
+                upstream = snow_upstream[n2]
+                downstream = snow_downstream[n1]
         else:
             upstream = 0
             downstream = 0
@@ -295,11 +295,11 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
         d = G[n1][n2]['d']
         l = G[n1][n2]['length']
 
-        shear = sid.F_mult * sid.c2 * mu_d(d) * q / d ** 3
+        shear = sid.c2 * mu_d(d) * q / d ** 3
         d_shear = d_update(shear, sid.F_p)
 
         if (oxresult[n1] == 1 or oxresult[n2] == 1):    
-            vegf = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])
+            vegf = np.abs(vnow[n1] - vnow[n2])
         else:
             vegf = 0
 
@@ -308,11 +308,11 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
 
         if oxresult[n1] == 1 and oxresult[n2] == 1:
             if pnow[n1] > pnow[n2]:
-                upstream = sid.cs * snow_upstream[n1]
-                downstream = sid.cs * snow_downstream[n2]
+                upstream = snow_upstream[n1]
+                downstream = snow_downstream[n2]
             else:
-                upstream = sid.cs * snow_upstream[n2]
-                downstream = sid.cs * snow_downstream[n1]
+                upstream = snow_upstream[n2]
+                downstream = snow_downstream[n1]
         else:
             upstream = 0
             downstream = 0
@@ -345,7 +345,7 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
         if (n1, n2) not in boundary_edges and (n2, n1) not in boundary_edges:
             edges.append((n1, n2))
             qs.append(q)
-            F = sid.F_mult / 2 * d * np.abs(pnow[n1] - pnow[n2]) / l
+            F = d * np.abs(pnow[n1] - pnow[n2]) / 2 / l
             colors.append(d_update(F, sid.F_p))
 
     pos = nx.get_node_attributes(G, 'pos')

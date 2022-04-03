@@ -28,6 +28,18 @@ def d_update(F, t):
         result = t.z0
     return result
 
+def update_diameters(sid, edges, d_pres, d_vegf, d_s):
+    d_new = sid.c_pres * d_pres + sid.c_vegf * d_vegf + sid.c_s * d_s
+    for i,e in enumerate(edges):
+        n1, n2, d, l, t = e
+        d += d_new[i]
+        if d < sid.dmin:
+            d = sid.dmin
+        if d > sid.dmax:
+            d = sid.dmax
+        edges[i] = (n1, n2, d, l, t)
+    return edges
+
 def make_dir(sid):
         if not os.path.isdir(sid.dirname):
             os.makedirs(sid.dirname)
