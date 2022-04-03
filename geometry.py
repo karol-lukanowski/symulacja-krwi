@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 import delaunay as De
+from oxygen import create_vector
 
 # Funkcje do znajdowania wezlow na okregu
 def find_circle_nodes(G, n, R):
@@ -154,13 +155,29 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
         out_nodes = find_circle_nodes(G, n, R)[2]
         return in_nodes, out_nodes
 
-    in_nodes, out_nodes, reg_nodes, in_edges, boundary_nodes_out, boundary_nodes_in = [], [], [], [], [], []
+    def top_default_nodes():
+
+        in_nodes = [De.find_node(G, [0,n])]
+        out_nodes = [De.find_node(G, [n,n])]
+        top_nodes = []
+        reg_nodes = []
+        for node in G.nodes:
+            pos = G.nodes[node]["pos"]
+            if pos[1] > n - 5:
+                top_nodes.append(node)
+            if node not in in_nodes and node not in out_nodes:
+                reg_nodes.append(node)
+        return in_nodes, out_nodes, reg_nodes, top_nodes
+
+    in_nodes, out_nodes, reg_nodes, in_edges, boundary_nodes_out, boundary_nodes_in, top_nodes = [], [], [], [], [], [], []
     if geo == 'rect':
         in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = rect_default_nodes()
     elif geo == 'cylindrical':
         in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = cyl_default_nodes()
     elif geo == 'donut':
         in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in = don_default_nodes()
+    elif geo == 'top':
+        in_nodes, out_nodes, reg_nodes, top_nodes = top_default_nodes()
     elif geo == 'own':
         in_nodes_pos = kwargs['in_nodes']
         out_nodes_pos = kwargs['out_nodes']
@@ -182,13 +199,24 @@ def set_geometry(n, G=[], geo='rect', R=25, R_s=5, *args, **kwargs):
                 d = G[node][neigh]['d']
                 l = G[node][neigh]['length']
                 in_edges.append((node, neigh, d, l))
-    
+
+    for node in top_nodes:
+        for neigh in G.neighbors(node):
+            if neigh in top_nodes:
+                G[node][neigh]['d'] = 100
+
     other_nodes = []           
     for node in G.nodes():
         if (node not in reg_nodes) and (node not in in_nodes) and (node not in out_nodes):
             other_nodes.append(node)
                 
-    return in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in
+    in_nodes_ox = in_nodes
+    out_nodes_ox = out_nodes
+    oxresult = np.zeros(n * n)
+    for node in top_nodes + in_nodes_ox + out_nodes_ox:
+        oxresult[node] = 1
+
+    return G, in_nodes, out_nodes, reg_nodes, boundary_nodes_out, boundary_nodes_in, in_nodes_ox, out_nodes_ox, oxresult
 
 
 

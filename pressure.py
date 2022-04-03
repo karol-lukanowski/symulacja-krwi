@@ -118,7 +118,10 @@ def update_network(G1, sid:simInputData, edges, pnow):
     for n1, n2, d, l, t in edges:
         G1[n1][n2]['d']= d
         q = sid.c1 / mu_d(d) * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
-        G1[n1][n2]['q'] = q
+        if d < 100:
+            G1[n1][n2]['q'] = q
+        else:
+            G1[n1][n2]['q'] = 0.00001
 
         if t == 1:    
             Q_in += q

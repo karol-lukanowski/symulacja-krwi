@@ -2,7 +2,9 @@
 import blood_oxygen as Bo
 import decrease as Dc
 import draw_net as Dr
-import oxygen as Ox
+import new_oxygen as Ox
+#import bloodox_everywhere as Ox
+#import oxygen as Ox
 import pressure as Pr
 #import pruning as Prun
 import save as Sv
@@ -14,15 +16,21 @@ from utils import solve_equation, simAnalysisData, collect_data
 
 from config import simInputData
 
+from delaunay import find_node
 
 
 sid = simInputData()
 sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges = build(sid)
 sad = simAnalysisData()
+out_node = find_node(G, sid.out_nodes_own[0])
+
+oxnowtab = []
 
 presult = Pr.create_vector(sid, in_nodes, out_nodes)
 if sid.oxygen:
-    bloodoxresult = Bo.create_vector(sid, in_nodes_ox)
+    #bloodoxresult_a = Bo.create_vector_a(sid, in_nodes_ox)
+    #bloodoxresult_v = Bo.create_vector_a(sid, out_nodes_ox)
+    bloodoxresult = Ox.create_vector2(sid, in_nodes_ox)
 
 iters = sid.old_iters + sid.iters
 for i in range(sid.old_iters, iters):
@@ -33,10 +41,15 @@ for i in range(sid.old_iters, iters):
     
     
     if sid.oxygen:
-        bloodoxmatrix = Bo.update_matrix(sid, pnow, oxresult, bloodoxresult, edges)
-        bloodoxnow = solve_equation(bloodoxmatrix, bloodoxresult)
-        oxmatrix = Ox.update_matrix(sid, oxresult, edges)
-        oxnow = solve_equation(oxmatrix, bloodoxnow)
+        # bloodoxmatrix = Bo.update_matrix_a(sid, pnow, oxresult, bloodoxresult_a, edges)
+        # bloodoxnow_a = solve_equation(bloodoxmatrix, bloodoxresult_a)
+        # bloodoxmatrix = Bo.update_matrix_v(sid, pnow, oxresult, bloodoxresult_v, edges)
+        # bloodoxnow_v = solve_equation(bloodoxmatrix, bloodoxresult_v)
+        # bloodoxnow = bloodoxnow_a + bloodoxnow_v
+        # oxmatrix = Ox.update_matrix(sid, oxresult, edges)
+        # oxnow = solve_equation(oxmatrix, bloodoxnow_a)
+        oxmatrix = Ox.update_matrix(sid, oxresult, bloodoxresult, pnow, edges)
+        oxnow = solve_equation(oxmatrix, bloodoxresult)
         vresult = Ve.create_vector(sid, oxresult, oxnow)
     else:
         vresult = Ve.create_vector(sid, oxresult)
@@ -58,20 +71,23 @@ for i in range(sid.old_iters, iters):
 
 
     if i % sid.plot_every == 0:
-        vnow2 = vnow.copy()
-        for node in out_nodes:
-            vnow2[node] = 0
+        # print (oxnow[out_node])
+        # oxnowtab.append(oxnow[out_node])
+        # vnow2 = vnow.copy()
+        # for node in out_nodes:
+        #     vnow2[node] = 0
 
         G = Pr.update_network(G, sid, edges, pnow)
 
-        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
+        #Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, oxnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
+        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, pnow, pnow, pnow, pnow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
         #Dr.draw(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, name=f'd{sid.old_iters // sid.save_every:04d}.png', data='d')
 #        Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png', oxdraw = [])
 #        Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow2)
 #        Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=snow)
 #        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
-        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
-        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = snow, data='d')
+        #Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
+#        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='d')
     
     if sid.shear_d:
         edges = Pr.update_graph(sid, edges, pnow)    
@@ -97,7 +113,11 @@ for i in range(sid.old_iters, iters):
     sid.old_iters += 1
 
 Sv.save('/save.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
-Dr.plot_params(sid)
+if sid.data_collection:
+    Dr.plot_params(sid)
+
+import numpy as np
+np.savetxt(sid.dirname+'/oxout.txt', oxnowtab)
 
 #An.getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname)
 

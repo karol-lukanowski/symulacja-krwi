@@ -129,8 +129,10 @@ def update_graph_upstream(sid:simInputData, snow, pnow, oxresult, edges):
             else:
                 F = sid.cs * snow[n2]
             d += d_update(F, sid.F_s)
-            # if d > sid.dmax:
-            #     d = sid.dmax
+            if d < sid.dmin:
+                d = sid.dmin
+            elif d > sid.dmax:
+                d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
 
     return edges
@@ -146,8 +148,10 @@ def update_graph_downstream(sid:simInputData, snow, pnow, oxresult, edges):
             else:
                 F = sid.cs * snow[n2]
             d += d_update(F, sid.F_s)
-            # if d > sid.dmax:
-            #     d = sid.dmax
+            if d < sid.dmin:
+                d = sid.dmin
+            elif d > sid.dmax:
+                d = sid.dmax
         edges[i] = (n1, n2, d, l, t)
     
     return edges

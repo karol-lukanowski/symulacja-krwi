@@ -50,22 +50,44 @@ class fParams():
 
 
 def find_ladder(sid, G):
+    # in1 = find_node(G, [40, 40])
+    # in2 = find_node(G, [25, 65])
+    # out1 = find_node(G, [60, 60])
+    # out2 = find_node(G, [35, 75])
+    #for i in range(len(p1) - 1):
+    #    G[p1[i]][p1[i+1]]['d'] = sid.dth
+    #for i in range(len(p2) - 1):
+    #    G[p2[i]][p2[i+1]]['d'] = sid.dth
     in1 = find_node(G, [40, 40])
-    in2 = find_node(G, [25, 65])
+    in2 = find_node(G, [30, 50])
+    in3 = find_node(G, [20, 60])
     out1 = find_node(G, [60, 60])
-    out2 = find_node(G, [35, 75])
+    out2 = find_node(G, [50, 70])
+    out3 = find_node(G, [40, 80])
     p1 = nx.shortest_path(G, in1, in2)
     p2 = nx.shortest_path(G, out1, out2)
+    p3 = nx.shortest_path(G, in2, in3)
+    p4 = nx.shortest_path(G, out2, out3)
+    p5 = nx.shortest_path(G, in2, out2)
+    p6 = nx.shortest_path(G, in3, out3)
     for i in range(len(p1) - 1):
-        G[p1[i]][p1[i+1]]['d'] = sid.dth
+       G[p1[i]][p1[i+1]]['d'] = sid.dth
     for i in range(len(p2) - 1):
-        G[p2[i]][p2[i+1]]['d'] = sid.dth
+       G[p2[i]][p2[i+1]]['d'] = sid.dth
+    for i in range(len(p3) - 1):
+       G[p3[i]][p3[i+1]]['d'] = sid.dth
+    for i in range(len(p4) - 1):
+       G[p4[i]][p4[i+1]]['d'] = sid.dth
+    for i in range(len(p5) - 1):
+       G[p5[i]][p5[i+1]]['d'] = sid.dth
+    for i in range(len(p6) - 1):
+       G[p6[i]][p6[i+1]]['d'] = sid.dth
     in_nodes = [in1]
     out_nodes = [out1]
     in_nodes_ox = [in1]
     out_nodes_ox = [out1]
     oxresult = np.zeros(sid.nsq)
-    for node in p1 + p2:
+    for node in p1 + p2 + p3 + p4 + p5 + p6:
         oxresult[node] = 1
     return G, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, oxresult
 

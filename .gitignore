@@ -6,6 +6,8 @@
 *.json
 *.bmp
 *.psd
+*.csv
+*.pptx
 /symulacja-krwi-materialy/fitkrew.plt
 /symulacja-krwi-materialy/main.pdf
 /symulacja-krwi-materialy/parametry/D/D.pdf
@@ -56,3 +58,24 @@
 /symulacja-krwi-materialy/Symulacja powstawania układu krwionośnego na siatce naczyń włosowatych/r.psd
 /symulacja-krwi-materialy/Symulacja_powstawania_uk_adu_krwiono_nego_na_siatce_naczy__w_osowatych.pdf
 /symulacja-krwi-materialy/szawello-raport.pdf
+/.pylint.d/main1.stats
+/backup0811/geometria_prostokatna/draw_net.py
+/backup0811/geometria_prostokatna/main.py
+/backup0811/geometria_prostokatna/triangular_net.py
+/backup0811/geometria_walcowa/funkcje_okrag.py
+/backup0811/geometria_walcowa/z_okregu/draw_net.py
+/backup0811/geometria_walcowa/z_okregu/main.py
+/backup0811/geometria_walcowa/z_okregu/triangular_net.py
+/backup0811/geometria_walcowa/ze_srodka/draw_net.py
+/backup0811/geometria_walcowa/ze_srodka/main.py
+/backup0811/geometria_walcowa/ze_srodka/triangular_net.py
+/backup0811/inne/benchmark.docx
+/backup0811/inne/main_do_kroku_czasowego_karol.py
+/backup0811/inne/old_main.py
+/backup0811/inne/test_odleglosci.py
+/backup0811/nierozdzielony_kod/nierozdzielona_symulacja_krwi.py
+/backup0811/old_geoms/cylindrical_geom.py
+/backup0811/old_geoms/donut_geom.py
+/backup0811/old_geoms/rectangular_geom.py
+/backup0811/upstream-in-blood.py
+/krew-backup/triangular_net.py

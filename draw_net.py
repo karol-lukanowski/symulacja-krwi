@@ -108,52 +108,6 @@ def drawblood(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, ox
     plt.savefig(sid.dirname + "/" + name)
     plt.close()
 
-def draw_initial_d(G, boundary_edges):
-    ds = []
-    for edge in G.edges(data='d'):
-            x, y, d = edge
-            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
-                ds.append(d)
-    plt.hist(ds, bins = 100, density = True)
-    plt.xlabel('diameter')
-    plt.ylabel('count (normalized)')
-    plt.title('Initial diameters distribution')
-    
-def plot_params(sid:simInputData):
-    f = open(sid.dirname+'/parameters.txt', 'r')
-    data = np.loadtxt(f)
-    prestab = []
-    vegftab = []
-    oxtab = []
-    for row in data:
-        prestab.append(row[0])
-        vegftab.append(row[1])
-        oxtab.append(row[2])
-    plt.figure(figsize=(15, 5))
-    plt.suptitle('Parameters')
-    spec = gridspec.GridSpec(ncols=3, nrows=1)
-    
-    plt.subplot(spec[0]).set_title('Pressure')
-    x = np.linspace(0, len(prestab), len(prestab))
-    plt.plot(x, prestab)
-    plt.xlabel('iterations')
-    plt.ylabel(r'$\Delta p$')
-    
-    plt.subplot(spec[1]).set_title('Oxygen')
-    x = np.linspace(0, len(prestab), len(prestab))
-    plt.plot(x, oxtab)
-    plt.xlabel('iterations')
-    plt.ylabel(r'average $c_{ox}^2$')
-    
-    plt.subplot(spec[2]).set_title('VEGF')
-    x = np.linspace(0, len(prestab), len(prestab))
-    plt.plot(x, vegftab)
-    plt.xlabel('iterations')
-    plt.ylabel(r'average $c_{vegf}^2$')
-    
-    plt.savefig(sid.dirname +'/parameters.png')
-    plt.close()
-
 
 def drawhist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow_downstream, name):
     d_hist = [[], [], [], [], [], [], [], []]
@@ -324,17 +278,16 @@ def drawhist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult,
     plt.close()
 
 
-def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, vnow, snow_upstream, snow_downstream, name):
+def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, oxnow, vnow, snow_upstream, snow_downstream, name):
     d_hist = []
     q_hist = []
     shear_hist = []
     vegf_hist = []
-    gradp_hist = []
     upstream_hist = []
     downstream_hist = []
     d_shear_hist = []
     d_vegf_hist = []
-    d_gradp_hist = []
+    ox_hist = []
 
 
     for n1, n2 in G.edges():
@@ -347,13 +300,11 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
 
         if (oxresult[n1] == 1 or oxresult[n2] == 1):    
             vegf = sid.F_mult_ox * np.abs(vnow[n1] - vnow[n2])
-            gradp = sid.cp * np.abs(pnow[n1] - pnow[n2]) / l
         else:
             vegf = 0
-            gradp = 0
 
         d_vegf = d_update(vegf, sid.F_ox)
-        d_gradp = d_update(gradp, sid.F_gradp)
+        
 
         if oxresult[n1] == 1 and oxresult[n2] == 1:
             if pnow[n1] > pnow[n2]:
@@ -365,7 +316,12 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
         else:
             upstream = 0
             downstream = 0
-        
+
+        if oxresult[n1] == 1:
+            ox_hist.append(oxnow[n1])
+        if oxresult[n2] == 1:
+            ox_hist.append(oxnow[n2])
+
         d_upstream = d_update(upstream, sid.F_s)
         d_downstream = d_update(downstream, sid.F_s)
 
@@ -374,12 +330,10 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
         d_hist.append(d)
         shear_hist.append(shear)
         vegf_hist.append(vegf)
-        gradp_hist.append(gradp)
         upstream_hist.append(d_upstream)
         downstream_hist.append(d_downstream)
         d_shear_hist.append(d_shear)
         d_vegf_hist.append(d_vegf)
-        d_gradp_hist.append(d_gradp)
 
     edges = []
     qs = []
@@ -435,8 +389,8 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
     plt.hist(vegf_hist, bins=50)
     plt.yscale("log")
 
-    plt.subplot(spec[9]).set_title('Grad p')
-    plt.hist(gradp_hist, bins=50)
+    plt.subplot(spec[9]).set_title('Oxygen')
+    plt.hist(oxnow, bins=50)
     plt.yscale("log")
 
     plt.subplot(spec[10]).set_title('Upstream growth')
@@ -455,8 +409,8 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
     plt.hist(d_vegf_hist, bins=50)
     plt.yscale("log")
 
-    plt.subplot(spec[14]).set_title('Grad p growth')
-    plt.hist(d_gradp_hist, bins=50)
+    plt.subplot(spec[14]).set_title('Oxygen')
+    plt.hist(ox_hist, bins=50)
     plt.yscale("log")    
 
     
@@ -475,21 +429,24 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
 
     edges = []
     qs = []
+    ds = []
     for edge in G.edges(data=data):
             x, y, q = edge
             if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
                 edges.append((x, y))
                 qs.append(q)
+                ds.append(q)
 
     #draw only those between oxygen nodes:
     # for i, edge in enumerate(edges):
     #     n1, n2 = edge
     #     if (oxresult[n1] != 1 or oxresult[n2] != 1):
     #         qs[i] = 0
+    #         ds[i] = 0
 
 
     
-    vessels = np.zeros(sid.nsq)
+    vessels = np.zeros(2 * sid.nsq)
 
     def find_veins(G, node, oxresult):
         vessels[node] = 2
@@ -497,16 +454,20 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
             if oxresult[neigh] == 1 and vessels[neigh] == 0:
                 find_veins(G, neigh, oxresult)
 
-    def find_arts(G, node, oxresult):
-        vessels[node] = 1
-        for neigh in G.neighbors(node):
-            if oxresult[neigh] == 1 and vessels[neigh] == 0:
-                find_arts(G, neigh, oxresult)
+    def find_colors(G, oxnodes, oxresult, color):
+        nodetab = []
+        for node in oxnodes:
+            vessels[node] = color
+            nodetab.append(node)
+        while len(nodetab) != 0:
+            for neigh in G.neighbors(nodetab[0]):
+                if oxresult[neigh] == 1 and vessels[neigh] == 0:
+                    vessels[neigh] = color
+                    nodetab.append(neigh)
+            nodetab.pop(0)
 
-    for node in in_nodes:
-        find_arts(G, node, oxresult)
-    for node in out_nodes:
-        find_veins(G, node, oxresult)
+    find_colors(G, in_nodes, oxresult, 1)
+    find_colors(G, out_nodes, oxresult, 2)
 
     colors = []
     for edge in edges:
@@ -518,8 +479,11 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
         else:
             colors.append('k')
 
-    nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / qmax, edge_color=colors)
-    nx.draw_networkx_nodes(G, pos, node_size = 15, node_color = oxdraw, cmap='Blues', vmax = 5e6)
+    if data == 'q':
+        nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / qmax, edge_color=colors)
+    else:
+        nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.ddrawconst * np.array(ds) / qmax, edge_color=colors)
+    #nx.draw_networkx_nodes(G, pos, node_size = 15, node_color = oxdraw, cmap='coolwarm')
 
     #### IN_NODES i OUT_NODES ####
     x_in, y_in = [], []
@@ -538,4 +502,51 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
     plt.xticks([], [])
     plt.yticks([], [])
     plt.savefig(sid.dirname + "/" + name)
+    plt.close()
+
+
+def draw_initial_d(G, boundary_edges):
+    ds = []
+    for edge in G.edges(data='d'):
+            x, y, d = edge
+            if (x, y) not in boundary_edges and (y, x) not in boundary_edges:
+                ds.append(d)
+    plt.hist(ds, bins = 100, density = True)
+    plt.xlabel('diameter')
+    plt.ylabel('count (normalized)')
+    plt.title('Initial diameters distribution')
+    
+def plot_params(sid:simInputData):
+    f = open(sid.dirname+'/params.txt', 'r')
+    data = np.loadtxt(f)
+    prestab = []
+    vegftab = []
+    oxtab = []
+    for row in data:
+        prestab.append(row[0])
+        vegftab.append(row[1])
+        oxtab.append(row[2])
+    plt.figure(figsize=(15, 5))
+    plt.suptitle('Parameters')
+    spec = gridspec.GridSpec(ncols=3, nrows=1)
+    
+    plt.subplot(spec[0]).set_title('Pressure')
+    x = np.linspace(0, len(prestab), len(prestab))
+    plt.plot(x, prestab)
+    plt.xlabel('iterations')
+    plt.ylabel(r'$\Delta p$')
+    
+    plt.subplot(spec[1]).set_title('Oxygen')
+    x = np.linspace(0, len(prestab), len(prestab))
+    plt.plot(x, oxtab)
+    plt.xlabel('iterations')
+    plt.ylabel(r'average $c_{ox}^2$')
+    
+    plt.subplot(spec[2]).set_title('VEGF')
+    x = np.linspace(0, len(prestab), len(prestab))
+    plt.plot(x, vegftab)
+    plt.xlabel('iterations')
+    plt.ylabel(r'average $c_{vegf}^2$')
+    
+    plt.savefig(sid.dirname +'/parameters.png')
     plt.close()
