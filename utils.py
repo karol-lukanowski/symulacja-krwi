@@ -44,14 +44,14 @@ def make_dir(sid):
         if not os.path.isdir(sid.dirname):
             os.makedirs(sid.dirname)
 
-        i = 0
-        dirname2 = sid.dirname
-        while (sid.dirname == dirname2):
-            if not os.path.isdir(sid.dirname + "/" + str(i)):
-                sid.dirname = sid.dirname + "/" + str(i)
-            else:
-                i += 1
-        os.makedirs(sid.dirname)
+        # i = 0
+        # dirname2 = sid.dirname
+        # while (sid.dirname == dirname2):
+        #     if not os.path.isdir(sid.dirname + "/" + str(i)):
+        #         sid.dirname = sid.dirname + "/" + str(i)
+        #     else:
+        #         i += 1
+        # os.makedirs(sid.dirname)
 
 class fParams():
     def __init__(self, params):
@@ -109,12 +109,25 @@ class simAnalysisData:
     vegf = []
     signal = []
 
-def collect_data(sad:simAnalysisData, sid, in_nodes, pnow, vnow, oxnow):
-    data = [pnow[in_nodes[0]], np.average(vnow), np.average(oxnow)]
-    sad.pressure.append(data[0])
-    sad.vegf.append(data[1])
-    sad.oxygen.append(data[2])
-    f = open(sid.dirname+'/params.txt', 'a')
-    f.write(f"\n")
-    np.savetxt(f, [[data[0], data[1], data[2]]])
-    f.close()
+def collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult):
+    V = 0
+    V_ox = 0
+    for n1, n2, d, l, t in edges:
+        V0 = np.pi * d ** 2 * l
+        V += V0
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
+            V_ox += V0
+    ox_out = 0
+    for node in out_nodes:
+        ox_out += oxnow[node]
+    ox_out = ox_out / len(out_nodes)
+    data = [pnow[in_nodes[0]], np.average(oxnow), np.average(vnow), V, V_ox, ox_out]
+    success = 0
+    while success != 1:
+        try:
+            f = open(sid.dirname+'/params.txt', 'a')
+            np.savetxt(f, [data])
+            f.close()
+            success = 1
+        except PermissionError:
+            pass

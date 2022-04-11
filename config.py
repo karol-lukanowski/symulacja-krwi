@@ -2,10 +2,12 @@ import numpy as np
 from utils import fParams
 
 class simInputData:
-    n = 101 # rozmiar siatki
+    n = 201 # rozmiar siatki
     iters = 901  # liczba iteracji
     plot_every = 30
     save_every = 200
+
+    figsize = 10
 
     #noise = ["uniform", 1, 0.9] #jednorodny rozkład srednic, srednica początkowa, diameter_wiggle_param
     noise = ["gaussian", 2, 0.2] #gaussowski rozkład srednic, mu, sigma
@@ -18,7 +20,7 @@ class simInputData:
     vegf_d = True
     signal_d = True
 
-    data_collection = False
+    data_collection = True
 
     qin = 10  * (n / 101) # ilosć wpływającej krwi
     presout = 0  # cisnienie na wyjsciu
@@ -27,15 +29,15 @@ class simInputData:
     c1 = np.pi / 128  # stała przepływu
     c2 = 64 / np.pi  # stała siły
 
-    D = 0.1 * (n / 101) ** 2 # współczynnik dyfuzji
-    k = 0.001 # stała reakcji
+    D = 0.1 * (n / 101) # współczynnik dyfuzji
+    k = 0.001 / (n / 101) # stała reakcji
     dth = 5 # graniczna grubosć
     dmin = 1
     dmax = 20
-    Dv = 0.2  * (n / 101) ** 2 # współczynnik dyfuzji VEGF
+    Dv = 0.2 * (n / 101) # współczynnik dyfuzji VEGF
 
-    c_pres = 1
-    c_vegf = 1
+    c_pres = 2
+    c_vegf = 2
     c_s = 1
 
     F_p = fParams({'F0': 0.0002, 'F1': 0.002, 'z0': 0, 'z1': 0.03})
@@ -55,8 +57,8 @@ class simInputData:
     qdrawconst = 30
     ddrawconst = 3
 
-    load = 0 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci (plik save), 2- wczytanie templatki (plik template)
-    load_name = 'own201/12'
+    load = 2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci (plik save), 2- wczytanie templatki (plik template)
+    load_name = 'params'
 
     #geo = "cylindrical"
     #geo = "donut"
@@ -76,4 +78,4 @@ class simInputData:
     
     nsq = n ** 2
     old_iters = 0
-    dirname = geo + str(n)
+    dirname = 'params' #+ geo + str(n)

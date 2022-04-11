@@ -1,11 +1,12 @@
 import networkx as nx
 import numpy as np
 import scipy.spatial
+from scipy.stats import truncnorm
 
-import utils as Ut
+#import utils as Ut
 
 
-def Build_delaunay_net(n, periodic = 'top', noise = ["uniform", 1, 1]):
+def Build_delaunay_net(n, periodic = 'top', noise = ["uniform", 1, 1], dmin = 1, dmax = 20):
 
     
     nkw = n**2
@@ -96,7 +97,7 @@ def Build_delaunay_net(n, periodic = 'top', noise = ["uniform", 1, 1]):
         if noise[0] == "uniform":
             G[node][neigh]['d'] = np.random.rand() * noise[2] + noise[1]
         elif noise[0] == "gaussian":
-            G[node][neigh]['d'] = Ut.PosGauss(noise[1], noise[2])
+            G[node][neigh]['d'] = truncnorm.rvs(dmin, dmax, loc = noise[1], scale = noise[2])#   Ut.PosGauss(noise[1], noise[2])
         elif noise[0] == "lognormal":
             G[node][neigh]['d'] = np.random.lognormal(noise[1], noise[2])
         G[node][neigh]['q'] = 0

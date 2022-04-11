@@ -11,15 +11,11 @@ from utils import solve_equation, simAnalysisData, collect_data, update_diameter
 
 from config import simInputData
 
-from delaunay import find_node
+
 
 
 sid = simInputData()
 sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges = build(sid)
-sad = simAnalysisData()
-out_node = find_node(G, sid.out_nodes_own[0])
-
-oxnowtab = []
 
 presult = Pr.create_vector(sid, in_nodes, out_nodes)
 if sid.oxygen:
@@ -78,7 +74,7 @@ for i in range(sid.old_iters, iters):
     oxresult = Ve.update_blood(sid, oxresult, edges)
 
     if sid.data_collection:
-        collect_data(sad, sid, in_nodes, pnow, vnow, oxnow)
+        collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult)
 
     if i % sid.save_every == 0 and i != 0:
         Sv.save(f'/save{sid.old_iters}.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
@@ -86,11 +82,8 @@ for i in range(sid.old_iters, iters):
     sid.old_iters += 1
 
 Sv.save('/save.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
-if sid.data_collection:
-    Dr.plot_params(sid)
-
-import numpy as np
-np.savetxt(sid.dirname+'/oxout.txt', oxnowtab)
+#if sid.data_collection:
+#    Dr.plot_params(sid)
 
 #An.getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname)
 

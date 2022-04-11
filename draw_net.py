@@ -362,7 +362,7 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
         
     q_max = max([edge[2] for edge in G.edges(data='q')])
  
-    plt.figure(figsize=(25, 20))
+    plt.figure(figsize=(sid.figsize * 1.25, sid.figsize))
     spec = gridspec.GridSpec(ncols=5, nrows=3, height_ratios=[5, 1, 1])
     
     plt.subplot(spec.new_subplotspec((0, 0), colspan=5))
@@ -421,7 +421,7 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
     """
     rysowanie krwi, data to q albo d
     """
-    plt.figure(figsize=(40, 40), dpi = 200)
+    plt.figure(figsize=(sid.figsize, sid.figsize), dpi = 200)
     plt.axis('off')
     pos = nx.get_node_attributes(G, 'pos')
 
