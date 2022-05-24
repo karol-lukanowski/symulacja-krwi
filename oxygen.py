@@ -23,27 +23,37 @@ def create_blood_vector(sid:simInputData, in_nodes_ox):
 def update_matrix(sid:simInputData, oxresult, bloodoxresult, pnow, edges):
     data, row, col = [], [], []
 
-    diag = np.ones(sid.nsq) * sid.k
+    diag = np.ones(sid.nsq)
     for n1, n2, d, l, t in edges:
         if bloodoxresult[n1] == 1:
             diag[n1] = 1
-            if bloodoxresult[n2] == 1:
-                diag[n2] = 1 
-            else:
-                if oxresult[n2] == 1:
-                    if pnow[n2] < pnow[n1]:
-                        res = -(pnow[n1] - pnow[n2]) * d ** 2 / (128 * sid.mu * l) #-(pnow[n1] - pnow[n2]) * d ** 4 * np.pi / (128 * sid.mu * l)
-                        data.append(res)
-                        row.append(n2)
-                        col.append(n1)
-                        diag[n2] -= res
-                res = -sid.D / l
-                data.append(res)
-                row.append(n2)
-                col.append(n1)
-                diag[n2] -= res
-        elif bloodoxresult[n2] == 1:
+        elif oxresult[n1] == 1:
+            diag[n1] = np.pi * d * sid.k_ox_b
+        else:
+            diag[n1] = sid.k_ox_t
+        if bloodoxresult[n2] == 1:
             diag[n2] = 1
+        elif oxresult[n2] == 1:
+            diag[n2] = np.pi * d * sid.k_ox_b
+        else:
+            diag[n2] = sid.k_ox_t         
+    for n1, n2, d, l, t in edges:
+        if bloodoxresult[n1] == 1:
+            if oxresult[n2] == 1:
+                if pnow[n2] < pnow[n1]:
+                    res = -(pnow[n1] - pnow[n2]) * d ** 2 / (128 * sid.mu * l) #-(pnow[n1] - pnow[n2]) * d ** 4 * np.pi / (128 * sid.mu * l)
+                    data.append(res)
+                    row.append(n2)
+                    col.append(n1)
+                    diag[n2] -= res
+                res = -sid.D_ox_b / l
+            else:
+                res = -sid.D_ox_t / l
+            data.append(res)
+            row.append(n2)
+            col.append(n1)
+            diag[n2] -= res
+        elif bloodoxresult[n2] == 1:
             if oxresult[n1] == 1:
                 if pnow[n1] < pnow[n2]:
                     res = -(pnow[n2] - pnow[n1]) * d ** 2 / (128 * sid.mu * l)
@@ -51,7 +61,9 @@ def update_matrix(sid:simInputData, oxresult, bloodoxresult, pnow, edges):
                     row.append(n1)
                     col.append(n2)
                     diag[n1] -= res
-            res = -sid.D / l
+                res = -sid.D_ox_b / l
+            else:
+                res = -sid.D_ox_t / l
             data.append(res)
             row.append(n1)
             col.append(n2)
@@ -69,7 +81,7 @@ def update_matrix(sid:simInputData, oxresult, bloodoxresult, pnow, edges):
                 row.append(n2)
                 col.append(n1)
                 diag[n2] -= res
-            res = -sid.D / l
+            res = -sid.D_ox_b / l
             data.append(res)
             row.append(n1)
             col.append(n2)
@@ -79,7 +91,7 @@ def update_matrix(sid:simInputData, oxresult, bloodoxresult, pnow, edges):
             col.append(n1)
             diag[n2] -= res
         else:
-            res = -sid.D / l
+            res = -sid.D_ox_t / l
             data.append(res)
             row.append(n1)
             col.append(n2)
@@ -87,67 +99,7 @@ def update_matrix(sid:simInputData, oxresult, bloodoxresult, pnow, edges):
             data.append(res)
             row.append(n2)
             col.append(n1)
-            diag[n2] -= res    
-        
-        #     else:
-        #         res = -sid.D / l ** 2
-        #         data.append(res)
-        #         row.append(n2)
-        #         col.append(n1)
-        #         diag[n2] -= res
-        # elif oxresult[n2] == 1:
-        #     res = -sid.D / l ** 2
-        #     data.append(res)
-        #     row.append(n1)
-        #     col.append(n2)
-        #     diag[n1] -= res
-        # else:
-        #     res = -sid.D / l ** 2
-        #     data.append(res)
-        #     row.append(n1)
-        #     col.append(n2)
-        #     data.append(res)
-        #     row.append(n2)
-        #     col.append(n1)
-        #     diag[n1] -= res
-        #     diag[n2] -= res
-        
-
-
-    # for n1, n2, d, l, t in edges:
-    #     if bloodoxresult[n1] == 1:
-    #         diag[n1] = 1
-    #         if bloodoxresult[n2] == 1:
-    #             diag[n2] = 1
-    #         elif oxresult[n2] == 1:
-    #             if pnow[n2] < pnow[n1]:
-    #                 res = -(pnow[n1] - pnow[n2]) * d ** 4 * np.pi / (128 * sid.mu * l)
-    #                 data.append(res)
-    #                 row.append(n2)
-    #                 col.append(n1)
-    #                 diag[n2] -= res
-    #     elif bloodoxresult[n2] == 1:
-    #         diag[n2] = 1
-    #         if oxresult[n1] == 1:
-    #             if pnow[n1] < pnow[n2]:
-    #                 res = -(pnow[n2] - pnow[n1]) * d ** 4 * np.pi / (128 * sid.mu * l)
-    #                 data.append(res)
-    #                 row.append(n1)
-    #                 col.append(n2)
-    #                 diag[n1] -= res
-    #     elif oxresult[n1] == 1 and oxresult[n2] == 1:
-    #         if pnow[n1] < pnow[n2]:
-    #             res = -(pnow[n2] - pnow[n1]) * d ** 4 * np.pi / (128 * sid.mu * l)
-    #             data.append(res)
-    #             row.append(n1)
-    #             col.append(n2)
-    #             diag[n1] -= res
-    #         elif pnow[n2] < pnow[n1]:
-    #             res = -(pnow[n1] - pnow[n2]) * d ** 4 * np.pi / (128 * sid.mu * l)
-    #             data.append(res)
-    #             row.append(n2)
-    #             col.append(n1)
-    #             diag[n2] -= res
+            diag[n2] -= res
 
     for node, datum in enumerate(diag):
         if datum != 0:

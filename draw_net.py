@@ -417,7 +417,7 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, oxres
     plt.savefig(sid.dirname + "/" + name)
     plt.close()
 
-def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, oxresult, oxdraw, data='q'):
+def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, oxresult, oxdraw, data='q', pruned = False):
     """
     rysowanie krwi, data to q albo d
     """
@@ -444,7 +444,13 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
     #         qs[i] = 0
     #         ds[i] = 0
 
-
+    if pruned == True:
+        qs = (np.array(qs) > sid.q_prun) * qs
+        ds = (np.array(qs) > sid.q_prun) * ds
+        # for i in range(len(qs)):
+        #     if qs[i] < sid.q_prun:
+        #         qs[i] = 0
+        #         ds[i] = 0
     
     vessels = np.zeros(2 * sid.nsq)
 
@@ -483,7 +489,7 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
         nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.qdrawconst * np.array(qs) / qmax, edge_color=colors)
     else:
         nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.ddrawconst * np.array(ds) / qmax, edge_color=colors)
-    #nx.draw_networkx_nodes(G, pos, node_size = 15, node_color = oxdraw, cmap='coolwarm')
+    nx.draw_networkx_nodes(G, pos, node_size = 1, node_color = np.array(oxdraw), cmap='coolwarm')
 
     #### IN_NODES i OUT_NODES ####
     x_in, y_in = [], []

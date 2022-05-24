@@ -29,10 +29,13 @@ def d_update(F, t):
     return result
 
 def update_diameters(sid, edges, d_pres, d_vegf, d_s):
-    d_new = sid.c_pres * d_pres + sid.c_vegf * d_vegf + sid.c_s * d_s
+    d_new = sid.c_pres * d_pres + sid.c_vegf * d_vegf + sid.c_s * d_s - sid.decrease
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
-        d += d_new[i]
+        if sid.linear:
+            d += d_new[i] * d
+        else:
+            d += d_new[i]
         if d < sid.dmin:
             d = sid.dmin
         if d > sid.dmax:
@@ -41,17 +44,17 @@ def update_diameters(sid, edges, d_pres, d_vegf, d_s):
     return edges
 
 def make_dir(sid):
-        if not os.path.isdir(sid.dirname):
-            os.makedirs(sid.dirname)
+        # if not os.path.isdir(sid.dirname):
+        #     os.makedirs(sid.dirname)
 
-        # i = 0
-        # dirname2 = sid.dirname
-        # while (sid.dirname == dirname2):
-        #     if not os.path.isdir(sid.dirname + "/" + str(i)):
-        #         sid.dirname = sid.dirname + "/" + str(i)
-        #     else:
-        #         i += 1
-        # os.makedirs(sid.dirname)
+        i = 0
+        dirname2 = sid.dirname
+        while (sid.dirname == dirname2):
+            if not os.path.isdir(sid.dirname + "/" + str(i)):
+                sid.dirname = sid.dirname + "/" + str(i)
+            else:
+                i += 1
+        os.makedirs(sid.dirname)
 
 class fParams():
     def __init__(self, params):
@@ -111,23 +114,55 @@ class simAnalysisData:
 
 def collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult):
     V = 0
-    V_ox = 0
+    V_q = 0
+    S = 0
+    S_q = 0
+    q2 = 0
+    q4 = 0
+    N = 0
     for n1, n2, d, l, t in edges:
-        V0 = np.pi * d ** 2 * l
+        q = sid.c1 / sid.mu * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
+        V0 = np.pi * (d / 2) ** 2 * l
+        S0 = np.pi * d * l
         V += V0
-        if oxresult[n1] == 1 and oxresult[n2] == 1:
-            V_ox += V0
+        S += S0
+        if q > sid.q_prun:
+            V_q += V0
+            S_q += S0
+            q2 += q ** 2
+            q4 += q ** 4
+            N += 1
+    A = (N - q2 ** 2 / q4) / (N - 1)
     ox_out = 0
     for node in out_nodes:
         ox_out += oxnow[node]
     ox_out = ox_out / len(out_nodes)
-    data = [pnow[in_nodes[0]], np.average(oxnow), np.average(vnow), V, V_ox, ox_out]
-    success = 0
-    while success != 1:
-        try:
-            f = open(sid.dirname+'/params.txt', 'a')
-            np.savetxt(f, [data])
-            f.close()
-            success = 1
-        except PermissionError:
-            pass
+    oxnow_nodes1 = np.sum(oxnow>0.1)
+    oxnow_nodes2 = np.sum(oxnow>0.2)
+    oxnow_nodes3 = np.sum(oxnow>0.3)
+    oxnow_nodes4 = np.sum(oxnow>0.4)
+    oxnow_nodes5 = np.sum(oxnow>0.5)
+    oxnow_nodes6 = np.sum(oxnow>0.6)
+    oxnow_nodes7 = np.sum(oxnow>0.7)
+    oxnow_nodes8 = np.sum(oxnow>0.8)
+    oxnow_nodes9 = np.sum(oxnow>0.9)
+    oxresult_nodes = np.sum(oxresult)
+    data = [pnow[in_nodes[0]], np.average(oxnow), np.average(oxnow ** 2), np.average(vnow), np.average(vnow ** 2), V, S, V_q, ox_out, A, oxnow_nodes1, oxnow_nodes2, oxnow_nodes3, oxnow_nodes4, oxnow_nodes5, oxnow_nodes6, oxnow_nodes7, oxnow_nodes8, oxnow_nodes9, oxresult_nodes]
+    def save_data(name, data):
+        success = 0
+        while success != 1:
+            try:
+                f = open(sid.dirname+'/'+name+'.txt', 'a')
+                np.savetxt(f, [data])
+                f.close()
+                success = 1
+            except PermissionError:
+                pass
+    save_data('params', data)
+    # save_data('pin', pnow[in_nodes[0]])
+    # save_data('oxnow', np.average(oxnow))
+    # save_data('oxnow2', np.average(oxnow ** 2))
+    # save_data('vnow', np.average(vnow))
+    # save_data('vnow2', np.average(vnow ** 2))
+    # save_data('S', S)
+    # save_data('V', V)

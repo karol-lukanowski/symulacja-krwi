@@ -10,7 +10,7 @@ from build import build
 from utils import solve_equation, simAnalysisData, collect_data, update_diameters
 
 from config import simInputData
-
+import numpy as np
 
 
 
@@ -52,17 +52,19 @@ for i in range(sid.old_iters, iters):
         G = Pr.update_network(G, sid, edges, pnow)
 
         Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, oxnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
-        #Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, pnow, pnow, pnow, pnow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
+#        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, pnow, pnow, pnow, pnow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
         #Dr.draw(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, name=f'd{sid.old_iters // sid.save_every:04d}.png', data='d')
 #        Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png', oxdraw = [])
 #        Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow2)
 #        Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=snow)
 #        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
-        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
-#        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='d')
+#        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
+        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
+#        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='d')
     
+    d_pres, d_vegf, d_s = np.zeros(len(edges)), np.zeros(len(edges)), np.zeros(len(edges))
     if sid.shear_d:
-        d_pres = Pr.update_graph(sid, edges, pnow)    
+        d_pres = Pr.update_graph(sid, edges, pnow)
     if sid.vegf_d:
         d_vegf = Ve.update_graph(sid, vnow, oxresult, edges)
     if sid.signal_d:
@@ -73,7 +75,7 @@ for i in range(sid.old_iters, iters):
 
     oxresult = Ve.update_blood(sid, oxresult, edges)
 
-    if sid.data_collection:
+    if sid.data_collection and i % sid.collect_data_every == 0:
         collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult)
 
     if i % sid.save_every == 0 and i != 0:
