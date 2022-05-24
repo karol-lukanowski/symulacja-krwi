@@ -11,7 +11,7 @@ def create_vector(sid:simInputData, oxresult, oxnow = []):
     if not sid.oxygen: # if oxygen is off, make oxnow such that vresult = 1
         oxnow = sid.R_c * np.ones(sid.nsq)
     vresult = 1 / (1 + np.exp(sid.R_a * (oxnow - sid.R_c)))
-    vresult = np.where(oxresult == 1, 0, vresult)
+    vresult = np.where(oxresult != 0, 0, vresult)
     vresult = -vresult
     return vresult
 
@@ -67,7 +67,7 @@ def update_graph(sid:simInputData, vnow, oxresult, edges):
     d_vegf = np.zeros(len(edges))
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
-        if (oxresult[n1] == 1 or oxresult[n2] == 1):
+        if (oxresult[n1] != 0 or oxresult[n2] != 0):
             F = np.abs(vnow[n1] - vnow[n2]) / l
             d_vegf[i] = d_update(F, sid.F_ox)
     return d_vegf
@@ -78,8 +78,8 @@ def update_blood(sid:simInputData, oxresult, edges):
     for i,e in enumerate(edges):
         n1, n2, d, l, t = e
         if d > sid.dth:
-            if oxresult2[n1] == 1:
-                oxresult[n2] = 1
-            elif oxresult2[n2] == 1:
-                oxresult[n1] = 1
+            if oxresult2[n1] != 0 and oxresult[n2] == 0:
+                oxresult[n2] = oxresult2[n1]
+            elif oxresult2[n2] != 0 and oxresult[n1] == 0:
+                oxresult[n1] = oxresult2[n2]
     return oxresult

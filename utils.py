@@ -146,7 +146,7 @@ def collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult):
     oxnow_nodes7 = np.sum(oxnow>0.7)
     oxnow_nodes8 = np.sum(oxnow>0.8)
     oxnow_nodes9 = np.sum(oxnow>0.9)
-    oxresult_nodes = np.sum(oxresult)
+    oxresult_nodes = np.sum(oxresult>0)
     data = [pnow[in_nodes[0]], np.average(oxnow), np.average(oxnow ** 2), np.average(vnow), np.average(vnow ** 2), V, S, V_q, ox_out, A, oxnow_nodes1, oxnow_nodes2, oxnow_nodes3, oxnow_nodes4, oxnow_nodes5, oxnow_nodes6, oxnow_nodes7, oxnow_nodes8, oxnow_nodes9, oxresult_nodes]
     def save_data(name, data):
         success = 0

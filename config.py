@@ -3,8 +3,8 @@ from utils import fParams
 
 class simInputData:
     n = 101 # rozmiar siatki
-    iters = 1  # liczba iteracji
-    plot_every = 1
+    iters = 1801  # liczba iteracji
+    plot_every = 60
     save_every = 200
     collect_data_every =  30
 
@@ -37,15 +37,15 @@ class simInputData:
 
     Dv = 0.2 * (n / 201) # współczynnik dyfuzji VEGF
     D_ox_b = 2e-5 * (n / 201) # współczynnik dyfuzji tlenu w krwi
-    k_ox_b = 2e-7 * (n / 201) # współczynnik reakcji tlenu w krwi
+    k_ox_b = 5e-6 * (n / 201) # współczynnik reakcji tlenu w krwi
     D_ox_t = 2e-5 * (n / 201) # współczynnik dyfuzji tlenu w tkance
-    k_ox_t = 7e-8 * (n / 201) # współczynnik reakcji tlenu w tkance
+    k_ox_t = 7e-9 * (n / 201) # współczynnik reakcji tlenu w tkance
 
     linear = 1
 
-    c_pres = 0.1
-    c_vegf = 0.5
-    c_s = 0.1
+    c_pres = 0
+    c_vegf = 2
+    c_s = 0.5
 
     decrease = 0
 
@@ -68,9 +68,9 @@ class simInputData:
     qdrawconst = 15
     ddrawconst = 0.5
 
-    load = 1 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci (plik save), 2- wczytanie templatki (plik template)
-    #load_name = 'params201/own101/0'
-    load_name = 'params201/own101/0/template/11'
+    load =  2 # 0- dane z config, 1- wczytanie danych z ewoluowanej sieci (plik save), 2- wczytanie templatki (plik template)
+    #load_name = 'params201/own101/1/template/2'
+    load_name = 'params201/own101/1'
 
 
     #geo = "cylindrical"

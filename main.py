@@ -59,8 +59,8 @@ for i in range(sid.old_iters, iters):
 #        Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=snow)
 #        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
 #        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
-        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
-#        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='d')
+        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
+        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='d')
     
     d_pres, d_vegf, d_s = np.zeros(len(edges)), np.zeros(len(edges)), np.zeros(len(edges))
     if sid.shear_d:

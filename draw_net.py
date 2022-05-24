@@ -452,35 +452,35 @@ def drawvessels(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, name, 
         #         qs[i] = 0
         #         ds[i] = 0
     
-    vessels = np.zeros(2 * sid.nsq)
+    # vessels = np.zeros(2 * sid.nsq)
 
-    def find_veins(G, node, oxresult):
-        vessels[node] = 2
-        for neigh in G.neighbors(node):
-            if oxresult[neigh] == 1 and vessels[neigh] == 0:
-                find_veins(G, neigh, oxresult)
+    # def find_veins(G, node, oxresult):
+    #     vessels[node] = 2
+    #     for neigh in G.neighbors(node):
+    #         if oxresult[neigh] == 1 and vessels[neigh] == 0:
+    #             find_veins(G, neigh, oxresult)
 
-    def find_colors(G, oxnodes, oxresult, color):
-        nodetab = []
-        for node in oxnodes:
-            vessels[node] = color
-            nodetab.append(node)
-        while len(nodetab) != 0:
-            for neigh in G.neighbors(nodetab[0]):
-                if oxresult[neigh] == 1 and vessels[neigh] == 0:
-                    vessels[neigh] = color
-                    nodetab.append(neigh)
-            nodetab.pop(0)
+    # def find_colors(G, oxnodes, oxresult, color):
+    #     nodetab = []
+    #     for node in oxnodes:
+    #         vessels[node] = color
+    #         nodetab.append(node)
+    #     while len(nodetab) != 0:
+    #         for neigh in G.neighbors(nodetab[0]):
+    #             if oxresult[neigh] == 1 and vessels[neigh] == 0:
+    #                 vessels[neigh] = color
+    #                 nodetab.append(neigh)
+    #         nodetab.pop(0)
 
-    find_colors(G, in_nodes, oxresult, 1)
-    find_colors(G, out_nodes, oxresult, 2)
+    # find_colors(G, in_nodes, oxresult, 1)
+    # find_colors(G, out_nodes, oxresult, 2)
 
     colors = []
     for edge in edges:
         n1, n2 = edge
-        if vessels[n1] == 1 and vessels[n2] == 1:
+        if oxresult[n1] == 1 and oxresult[n2] == 1:
             colors.append('r')
-        elif vessels[n1] == 2 and vessels[n2] == 2:
+        elif oxresult[n1] == 2 and oxresult[n2] == 2:
             colors.append('b')
         else:
             colors.append('k')

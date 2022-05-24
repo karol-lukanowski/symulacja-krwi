@@ -27,7 +27,10 @@ def build(sid:simInputData):
     elif sid.load == 2:
         sid2, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges = Sv.load(sid.load_name+'/template.dill')
         sid.n = sid2.n
-        sid.dirname = 'params/p' + str(sid.c_pres) + 'v' + str(sid.c_vegf) + 's' + str(sid.c_s) #sid2.dirname + '/template'
+        #sid.dirname = 'params/k/k' + str(sid.k) + 'D' + str(sid.D) + 'Dv' + str(sid.Dv) #sid2.dirname + '/template'
+        #sid.dirname = 'params/p' + str(sid.c_pres) + 'v' + str(sid.c_vegf) + 's' + str(sid.c_s)
+        #sid.dirname = 'params201/own101/1/template'
+        sid.dirname = sid2.dirname + '/template'
         make_dir(sid)
         Sv.save_config(sid)
 
