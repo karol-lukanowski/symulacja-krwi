@@ -120,6 +120,7 @@ def collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult):
     q2 = 0
     q4 = 0
     N = 0
+    L = 0
     for n1, n2, d, l, t in edges:
         q = sid.c1 / sid.mu * d ** 4 * np.abs(pnow[n1] - pnow[n2]) / l
         V0 = np.pi * (d / 2) ** 2 * l
@@ -132,6 +133,8 @@ def collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult):
             q2 += q ** 2
             q4 += q ** 4
             N += 1
+        if (oxresult[n1] == 1 and oxresult[n2] == 1) or (oxresult[n1] == 2 and oxresult[n2] == 2):
+            L += l
     A = (N - q2 ** 2 / q4) / (N - 1)
     ox_out = 0
     for node in out_nodes:
@@ -147,7 +150,7 @@ def collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult):
     oxnow_nodes8 = np.sum(oxnow>0.8)
     oxnow_nodes9 = np.sum(oxnow>0.9)
     oxresult_nodes = np.sum(oxresult>0)
-    data = [pnow[in_nodes[0]], np.average(oxnow), np.average(oxnow ** 2), np.average(vnow), np.average(vnow ** 2), V, S, V_q, ox_out, A, oxnow_nodes1, oxnow_nodes2, oxnow_nodes3, oxnow_nodes4, oxnow_nodes5, oxnow_nodes6, oxnow_nodes7, oxnow_nodes8, oxnow_nodes9, oxresult_nodes]
+    data = [pnow[in_nodes[0]], np.average(oxnow), np.average(oxnow ** 2), np.average(vnow), np.average(vnow ** 2), V, S, V_q, ox_out, A, oxnow_nodes1, oxnow_nodes2, oxnow_nodes3, oxnow_nodes4, oxnow_nodes5, oxnow_nodes6, oxnow_nodes7, oxnow_nodes8, oxnow_nodes9, oxresult_nodes, L]
     def save_data(name, data):
         success = 0
         while success != 1:
