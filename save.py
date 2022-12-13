@@ -1,11 +1,10 @@
 import networkx as nx
 import dill
 from config import simInputData
-from utils import fParams
                                                                             
-def save(name, sid:simInputData, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges):
+def save(name, sid:simInputData, G, in_nodes, out_nodes, boundary_edges):
     pos = nx.get_node_attributes(G,'pos')
-    All = [sid, edges, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, oxresult, boundary_edges, pos]
+    All = [sid, [], in_nodes, out_nodes, boundary_edges, pos]
 
     with open(sid.dirname+name, 'wb') as file:
         dill.dump(All, file)
@@ -19,11 +18,8 @@ def load(name):
     edges = All[1]
     in_nodes = All[2]
     out_nodes = All[3]
-    in_nodes_ox = All[4]
-    out_nodes_ox = All[5]
-    oxresult = All[6]
-    boundary_edges = All[7]
-    pos = All[8]
+    boundary_edges = All[4]
+    pos = All[5]
 
     def reproduct():
         G1 = nx.Graph()
@@ -34,19 +30,16 @@ def load(name):
         for node in new_pos:
             G1.add_node(node, pos = new_pos[node])
         for n1, n2, d, l, t in edges:
-            G1.add_edge(n1, n2, d = d, q = 0, length = l)
+            G1.add_edge(n1, n2, d = d, q = 0, l = l)
 
         return G1
     
     G1 = reproduct()
-    return  sid, G1, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges
+    return  sid, G1, in_nodes, out_nodes, boundary_edges
 
 
 def save_config(sid:simInputData):
     f = open(sid.dirname+'/config.txt', 'w')
     for key, val in sid.__class__.__dict__.items():
-        if isinstance(val, fParams):
-            f.write(f'{key} = {val.__dict__} \r')
-        else:
-            f.write(f'{key} = {val} \r')
-    f.close()     
+        f.write(f'{key} = {val} \r')
+    f.close()

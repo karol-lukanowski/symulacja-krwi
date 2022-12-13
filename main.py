@@ -1,95 +1,44 @@
-#import analysis as An
+import data as Da
 import draw_net as Dr
-import oxygen as Ox
+import growth as Gr
+import incidence as In
 import pressure as Pr
 import save as Sv
-import upstream as Up
-import vegf as Ve
 
 from build import build
-from utils import solve_equation, simAnalysisData, collect_data, update_diameters
+from utils import initialize_iterators, update_iterators
 
 from config import simInputData
 import numpy as np
 
-
-
 sid = simInputData()
-sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges = build(sid)
+sid, G, in_nodes, out_nodes, boundary_edges = build(sid)
+pressure_b = Pr.create_vector(sid, in_nodes)
+inc_matrix, mid_matrix, bound_matrix, in_matrix, diams, lens, in_edges, \
+    out_edges, edge_list, boundary_edge_list = In.create_matrices(sid, G, in_nodes, out_nodes, boundary_edges)
 
-presult = Pr.create_vector(sid, in_nodes, out_nodes)
-if sid.oxygen:
-    bloodoxresult = Ox.create_blood_vector(sid, in_nodes_ox)
+iters, tmax, i, t, breakthrough = initialize_iterators(sid)
 
-iters = sid.old_iters + sid.iters
-for i in range(sid.old_iters, iters):
-    print(f'Iter {i + 1}/{iters}')
+while t < tmax and i < iters and not breakthrough:
+    print(f'Iter {i + 1}/{iters} Time {t:.2f}/{tmax:.2f}')
 
-    pmatrix = Pr.update_matrix(sid, edges, in_nodes, out_nodes)
-    pnow = solve_equation(pmatrix, presult)
-    
-    
-    if sid.oxygen:
-        oxmatrix = Ox.update_matrix(sid, oxresult, bloodoxresult, pnow, edges)
-        oxnow = solve_equation(oxmatrix, bloodoxresult)
-        vresult = Ve.create_vector(sid, oxresult, oxnow)
-    else:
-        vresult = Ve.create_vector(sid, oxresult)
-
-    vmatrix = Ve.update_matrix(sid, vresult, edges)
-    vnow = solve_equation(vmatrix, vresult)
-
-    if sid.signal:
-        smatrix, sresult = Up.update_matrix_upstream(sid, vnow, pnow, edges, in_nodes)
-        snow_upstream = solve_equation(smatrix, sresult)
-        smatrix, sresult = Up.update_matrix_downstream(sid, vnow, pnow, edges, out_nodes)
-        snow_downstream = solve_equation(smatrix, sresult)
-        snow = snow_upstream+snow_downstream
-
-
-
+    pressure, flow = Pr.find_flow(sid, diams, lens, inc_matrix, mid_matrix, bound_matrix, in_matrix, pressure_b, in_nodes)
     if i % sid.plot_every == 0:
-        G = Pr.update_network(G, sid, edges, pnow)
+        Da.check_flow(flow, in_edges, out_edges)
+        G = Pr.update_network(G, edge_list, diams, flow)
+        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edge_list, diams, flow, name=f'd_{sid.old_iters:.2f}_{sid.old_t:.2f}.png', draw = 'd')
+        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edge_list, diams, flow, name=f'q_{sid.old_iters:.2f}_{sid.old_t:.2f}.png', draw = 'q')
+        
+    # diams, dt = update_diameters(sid, flow, cb, diams, lens, inc_matrix, out_edges)
+    diams, dt = Gr.update_diameters(sid, flow, diams)
 
-        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, oxnow, vnow, snow_upstream, snow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
-#        Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, pnow, pnow, pnow, pnow, pnow, name=f'histogram{sid.old_iters // sid.plot_every:04d}.png')
-        #Dr.draw(sid, G, in_nodes, out_nodes, boundary_edges, oxresult, name=f'd{sid.old_iters // sid.save_every:04d}.png', data='d')
-#        Dr.drawq(name = f'q{(i+old_iters)//save_every:04d}.png', oxdraw = [])
-#        Dr.drawq(name=f'veq{i // save_every:04d}.png', oxdraw=vnow2)
-#        Dr.drawq(name=f'oxq{i // save_every:04d}.png', oxdraw=snow)
-#        Dr.drawblood(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_blood{sid.old_iters // sid.save_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='q')
-#        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
-        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'q_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = oxnow, data='q')
-        Dr.drawvessels(sid, G, in_nodes, out_nodes, boundary_edges, name=f'd_vessels{sid.old_iters // sid.plot_every:04d}.png', oxresult=oxresult, oxdraw = vnow, data='d')
-    
-    d_pres, d_vegf, d_s = np.zeros(len(edges)), np.zeros(len(edges)), np.zeros(len(edges))
-    if sid.shear_d:
-        d_pres = Pr.update_graph(sid, edges, pnow)
-    if sid.vegf_d:
-        d_vegf = Ve.update_graph(sid, vnow, oxresult, edges)
-    if sid.signal_d:
-        d_s = Up.update_graph(sid, snow_upstream, snow_downstream, pnow, oxresult, edges)
-    
-    edges = update_diameters(sid, edges, d_pres, d_vegf, d_s)
+    i, t = update_iterators(sid, i, t, dt)
+    Da.collect_data(sid, pressure)
 
-
-    oxresult = Ve.update_blood(sid, oxresult, edges)
-
-    if sid.data_collection and i % sid.collect_data_every == 0:
-        collect_data(sid, edges, in_nodes, out_nodes, pnow, vnow, oxnow, oxresult)
-
-    if i % sid.save_every == 0 and i != 0:
-        Sv.save(f'/save{sid.old_iters}.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
-
-    sid.old_iters += 1
-
-Sv.save('/save.dill', sid, G, edges, oxresult, in_nodes, out_nodes, in_nodes_ox, out_nodes_ox, boundary_edges)
-#if sid.data_collection:
-#    Dr.plot_params(sid)
-
-#An.getStrahlerHistogram(G, pnow, oxresult, in_nodes, dirname)
-
-
-#DiG = An.getDiGraph(G, pnow, oxresult, in_nodes)
-#DiG = An.strahlerOrder(DiG)
-#An.plotStrahlerGraph(DiG, 'deown101deown_drabina/26')
+if i != 1:
+    G = Pr.update_network(G, edge_list, diams, flow)
+    Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edge_list, diams, flow, name=f'd_{sid.old_iters:.2f}_{sid.old_t:.2f}.png', draw = 'd')
+    Dr.uniform_hist(sid, G, in_nodes, out_nodes, boundary_edge_list, diams, flow, name=f'q_{sid.old_iters:.2f}_{sid.old_t:.2f}.png', draw = 'q')
+    Da.check_flow(flow, in_edges, out_edges)
+    Sv.save('/save.dill', sid, G, in_nodes, out_nodes, boundary_edges)
+    Da.plot_data(sid)
