@@ -6,7 +6,7 @@ from matplotlib import gridspec
 from config import simInputData
 
 
-def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, diams, flow, name, draw = 'd'):
+def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, diams, flow, blood_vessels, oxygen, name, draw = 'd'):
     if draw == 'd':
         qs = diams * (1 - boundary_edges)
     else:
@@ -29,6 +29,7 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, diams
         x_out.append(pos[node][0])
         y_out.append(pos[node][1])
 
+    
     # x_tr, y_tr = [], []
     # for node in triangles_pos:
     #     x_tr.append(node[0])
@@ -42,9 +43,9 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, diams
     plt.scatter(x_in, y_in, s=60, facecolors='white', edgecolors='black')
     plt.scatter(x_out, y_out, s=60, facecolors='black', edgecolors='white')
     #plt.scatter(x_tr, y_tr, s=1*(vols < 9), facecolors='red', edgecolors='black')
-    nx.draw_networkx_edges(G, pos, edge_color = 'k', width=sid.ddrawconst * np.array(qs))
+    nx.draw_networkx_edges(G, pos, edge_color = blood_vessels, width=sid.ddrawconst * np.array(qs))
     #nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.ddrawconst * np.array(qs), edge_color=colors)
-    #nx.draw_networkx_nodes(G, pos, node_size = 25 * oxdraw, node_color = oxdraw, cmap='Reds')
+    nx.draw_networkx_nodes(G, pos, node_size = 25 * oxygen, node_color = oxygen, cmap='Blues')
     plt.axis('equal')
     
     plt.subplot(spec[cols]).set_title('Diameter')
@@ -52,16 +53,16 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, diams
     plt.yscale("log")
 
     plt.subplot(spec[cols + 1]).set_title('Flow')
-    plt.hist(flow, bins=50)
+    plt.hist(np.abs(flow), bins=50)
     plt.yscale("log")
 
     plt.subplot(spec[cols + 2]).set_title('Shear')
     plt.hist(shear, bins=50)
     plt.yscale("log")
 
-    # plt.subplot(spec[cols + 3]).set_title('cc')
-    # plt.hist(cc, bins=50)
-    # plt.yscale("log")
+    plt.subplot(spec[cols + 3]).set_title('Oxygen')
+    plt.hist(oxygen, bins=50)
+    plt.yscale("log")
 
     # plt.subplot(spec[cols + 4]).set_title('vola')
     # plt.hist(vols, bins=50)

@@ -21,7 +21,7 @@ def sigmoid(x, alpha, beta):
     """
     return 1 / (1 + np.exp(-alpha * (x - beta)))
 
-def update_diameters(sid, flow, diams):
+def update_diameters(sid, inc_matrix, flow, diams, blood_vessels, in_nodes, out_nodes):
     growth = np.zeros_like(diams)
     if sid.include_shear_growth:
         growth += sid.shear_impact * find_shear_growth(sid, flow, diams)
@@ -40,8 +40,12 @@ def update_diameters(sid, flow, diams):
         dt = sid.dt
     
     diams += growth * dt
-    diams = (diams > sid.dmin) * diams + (diams <= sid.dmin) * sid.dmin
-    return diams, dt
+    diams = (diams > sid.d_min) * diams + (diams <= sid.d_min) * sid.d_min
+    inlet = np.zeros(sid.nsq)
+    for node in in_nodes + out_nodes:
+        inlet[node] = 1
+    blood_vessels = ((diams > sid.d_th) * 1) * (np.abs(inc_matrix) @ (np.abs(inc_matrix.transpose()) @ blood_vessels + inlet) != 0) # MAYBE?
+    return diams, blood_vessels, dt
         
 def find_shear_growth(sid, flow, diams):
     """_summary_

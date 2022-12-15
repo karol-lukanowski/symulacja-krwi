@@ -1,7 +1,7 @@
 import numpy as np
 
 class simInputData:
-    n = 50 # rozmiar siatki
+    n = 20 # rozmiar siatki
     iters = 1000 # liczba iteracji
     tmax = 1000
     plot_every = 100
@@ -21,6 +21,12 @@ class simInputData:
     shear_a = 10
     shear_b = 1
 
+    # OXYGEN
+    adv_const = 1
+    rec_bv_const = 0.5
+    rec_t_const = 0.1
+
+
     noise = ["gaussian", 1, 0.1] # fix truncnorm in Delaunay
 
     qin = 1 # przepływ na wejściu
@@ -28,8 +34,9 @@ class simInputData:
     l = 1  # początkowa długosć krawędzi
 
 
-    dmin = 0.1
-    dmax = 1000
+    d_min = 0.1
+    d_max = 1000
+    d_th = 5
 
     # TIMESTEP
     dt = 0.01

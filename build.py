@@ -10,7 +10,7 @@ from config import simInputData
 def build(sid:simInputData):
 
     if sid.load == 0:
-        G, boundary_edges = De.Build_delaunay_net(sid.n, periodic = sid.periodic, noise = sid.noise, dmin = sid.dmin, dmax = sid.dmax)
+        G, boundary_edges = De.Build_delaunay_net(sid.n, periodic = sid.periodic, noise = sid.noise, dmin = sid.d_min, dmax = sid.d_max)
         in_nodes, out_nodes = set_geometry(G, sid.n, geo=sid.geo, in_nodes=sid.in_nodes_own, out_nodes=sid.out_nodes_own)
 
         make_dir(sid)
