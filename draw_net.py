@@ -45,7 +45,7 @@ def uniform_hist(sid:simInputData, G, in_nodes, out_nodes, boundary_edges, diams
     #plt.scatter(x_tr, y_tr, s=1*(vols < 9), facecolors='red', edgecolors='black')
     nx.draw_networkx_edges(G, pos, edge_color = blood_vessels, width=sid.ddrawconst * np.array(qs))
     #nx.draw_networkx_edges(G, pos, edgelist=edges, width=sid.ddrawconst * np.array(qs), edge_color=colors)
-    nx.draw_networkx_nodes(G, pos, node_size = 25 * oxygen, node_color = oxygen, cmap='Blues')
+    nx.draw_networkx_nodes(G, pos, node_size = 1, node_color = oxygen, cmap='Blues')
     plt.axis('equal')
     
     plt.subplot(spec[cols]).set_title('Diameter')

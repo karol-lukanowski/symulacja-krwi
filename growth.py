@@ -21,12 +21,12 @@ def sigmoid(x, alpha, beta):
     """
     return 1 / (1 + np.exp(-alpha * (x - beta)))
 
-def update_diameters(sid, inc_matrix, flow, diams, blood_vessels, in_nodes, out_nodes):
+def update_diameters(sid, inc_matrix, flow, diams, lens, vegf, blood_vessels, in_nodes, out_nodes):
     growth = np.zeros_like(diams)
     if sid.include_shear_growth:
         growth += sid.shear_impact * find_shear_growth(sid, flow, diams)
     if sid.include_vegf_growth:
-        growth += find_vegf_growth()
+        growth += find_vegf_growth(sid, inc_matrix, vegf, lens, blood_vessels, in_nodes, out_nodes)
     if sid.include_signal_growth:
         growth += find_signal_growth()
     if sid.include_shrink:
@@ -61,3 +61,12 @@ def find_shear_growth(sid, flow, diams):
     viscs = find_viscosity(sid, diams)
     force = viscs * np.abs(flow) / diams
     return sigmoid(force, sid.shear_a, sid.shear_b)
+
+def find_vegf_growth(sid:simInputData, inc_matrix, vegf, lens, blood_vessels, in_nodes, out_nodes):
+    inlet = np.zeros(sid.nsq)
+    for node in in_nodes + out_nodes:
+        inlet[node] = 1
+    blood_growth_vessels = 1 * (np.abs(inc_matrix) @ spr.diags(((np.abs(inc_matrix.transpose()) @ blood_vessels + inlet) != 0) * 1) @ np.abs(inc_matrix.transpose()))
+    force = blood_growth_vessels * (inc_matrix @ vegf) / lens
+    return sigmoid(force, sid.vegf_force_a, sid.vegf_force_b)
+    

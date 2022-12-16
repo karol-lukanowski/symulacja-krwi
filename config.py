@@ -1,7 +1,7 @@
 import numpy as np
 
 class simInputData:
-    n = 20 # rozmiar siatki
+    n = 100 # rozmiar siatki
     iters = 1000 # liczba iteracji
     tmax = 1000
     plot_every = 100
@@ -12,7 +12,7 @@ class simInputData:
     include_adaptive_dt = True
     
     include_shear_growth = True
-    include_vegf_growth = False
+    include_vegf_growth = True
     include_signal_growth = False
     include_shrink = False
 
@@ -23,8 +23,15 @@ class simInputData:
 
     # OXYGEN
     adv_const = 1
-    rec_bv_const = 0.5
+    rec_bv_const = 0.02
     rec_t_const = 0.1
+    
+    # VEGF
+    vegf_const = 1
+    vegf_a = 10
+    vegf_b = 0.3
+    vegf_force_a = 10
+    vegf_force_b = 1
 
 
     noise = ["gaussian", 1, 0.1] # fix truncnorm in Delaunay

@@ -44,9 +44,10 @@ def find_oxygen(sid, inc_matrix, diams, lens, blood_vessels, flow, in_nodes, out
     ox_diff_matrix = inc_matrix.transpose() @ spr.diags((blood_vessels *  diams ** 2 + 1 - blood_vessels) / lens) @ inc_matrix
     # we need a matrix with only downstream elements (and only in blood vessels, for advection terms)
     ox_adv_matrix = np.abs(inc_matrix.transpose() @ (spr.diags(sid.adv_const * flow * blood_vessels) @ inc_matrix > 0))
-
+    ox_adv_matrix.setdiag(0)
     # we create the diagonal for advection terms (equal -inflow for given node), including ones for input nodes
-    diag = -np.abs(inc_matrix.transpose()) @ np.abs(sid.adv_const * flow * blood_vessels) / 2 # find diagonal coefficients (inlet flow for each node)
+    #diag = -np.abs(inc_matrix.transpose()) @ np.abs(sid.adv_const * flow * blood_vessels) / 2 # find diagonal coefficients (inlet flow for each node)
+    diag = -np.array(ox_adv_matrix.sum(axis = 1).flatten())[0]
     for node in in_nodes:
         diag[node] = 1 # set diagonal for input nodes to 1
     for node in out_nodes:

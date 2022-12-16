@@ -1,19 +1,59 @@
 import numpy as np
 import scipy.sparse as spr
 
-from utils import d_update
+from utils import solve_equation
 
 from config import simInputData
 
 
+def create_vector(sid:simInputData, inc_matrix, oxygen, blood_vessels, in_nodes, out_nodes):
+    """ Creates vector result for pressure calculation.
+    
+    For inlet and outlet nodes elements of the vector correspond explicitly
+    to the pressure in nodes, for regular nodes elements of the vector equal
+    0 correspond to flow continuity.
 
-def create_vector(sid:simInputData, oxresult, oxnow = []):
-    if not sid.oxygen: # if oxygen is off, make oxnow such that vresult = 1
-        oxnow = sid.R_c * np.ones(sid.nsq)
-    vresult = 1 / (1 + np.exp(sid.R_a * (oxnow - sid.R_c)))
-    vresult = np.where(oxresult != 0, 0, vresult)
-    vresult = -vresult
-    return vresult
+    Parameters
+    -------
+    sid : simInputData class object
+        all config parameters of the simulation, here we use attributes:
+        nsq - number of nodes in the network squared
+
+    in_nodes : list
+        list of inlet nodes
+    
+    Returns
+    -------
+    scipy sparse vector
+        result vector for pressure calculation
+    """
+    inlet = np.zeros(sid.nsq)
+    for node in in_nodes + out_nodes:
+        inlet[node] = 1
+    blood_nodes = 1 * ((np.abs(inc_matrix.transpose()) @ blood_vessels + inlet) != 0)
+    vegf_b = (1 - blood_nodes) * sid.vegf_const / (1 + np.exp(-sid.vegf_a * (oxygen - sid.vegf_b)))    
+    return vegf_b
+
+def find_vegf(sid, inc_matrix, lens, blood_vessels, vegf_b, in_nodes, out_nodes):
+
+    # we solve equation nabla^2 c_v = c1 sigmoid(c_0) in tissue
+    # we set zero concentration of c_v on nodes that are part of blood vessels network
+    # so we create full matrices and afterwards zero the rows for blood nodes and give them one on diagonal
+    # first we create matrix for diffusion in tissue
+    vegf_diff_matrix = inc_matrix.transpose() @ spr.diags((1 - blood_vessels) / lens) @ inc_matrix
+    inlet = np.zeros(sid.nsq)
+    for node in in_nodes + out_nodes:
+        inlet[node] = 1
+    blood_nodes = 1 * ((np.abs(inc_matrix.transpose()) @ blood_vessels + inlet) != 0)
+    vegf_matrix = spr.diags(1 - blood_nodes) * vegf_diff_matrix + spr.diags(blood_nodes)
+    
+    vegf = solve_equation(vegf_matrix, vegf_b)
+    return vegf
+
+
+
+
+
 
 def update_matrix(sid:simInputData, vresult, edges):
 
